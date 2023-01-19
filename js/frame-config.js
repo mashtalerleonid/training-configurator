@@ -49,7 +49,7 @@ materialLoader.generateMarkup(materialLoader.frameMaterialIds);
 
 initScene();
 
-loaderGLTF.load("../models/frame-lamp.glb", async function (gltf) {
+loaderGLTF.load("./models/frame-lamp.glb", async function (gltf) {
   gltf.scene.traverse((el) => {
     if (el.type === "Mesh") {
       model3D.add(el.clone());
