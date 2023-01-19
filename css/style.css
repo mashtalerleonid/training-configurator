@@ -1,0 +1,65 @@
+body {
+  margin: 0;
+  position: relative;
+  /* height: 100%; */
+}
+
+input {
+  width: 250px;
+}
+
+#canvas-3d {
+  margin-top: 20px;
+  width: 100%;
+  height: 70vh;
+  display: block;
+  outline: 2px solid tomato;
+  /* background-color: rgb(51, 219, 219); */
+  /* position: absolute; */
+  /* top: 0; */
+}
+
+#canvas-texture {
+  display: block;
+  /* background-color: rgb(204, 201, 21); */
+  outline: 2px solid rgb(224, 228, 25);
+}
+
+#canvas-result {
+  display: block;
+  /* background-color: rgb(204, 201, 21); */
+  outline: 2px solid rgb(14, 177, 68);
+}
+
+.list {
+  display: flex;
+  margin-top: 10px;
+}
+
+.item {
+  margin-right: 10px;
+  width: 100px;
+  height: 100px;
+}
+
+.item > img {
+  width: 100%;
+}
+
+/* .rx {
+  position: absolute;
+  top: 20px;
+  z-index: 1;
+}
+
+.ry {
+  position: absolute;
+  top: 40px;
+  z-index: 1;
+}
+
+.rz {
+  position: absolute;
+  top: 60px;
+  z-index: 1;
+} */
