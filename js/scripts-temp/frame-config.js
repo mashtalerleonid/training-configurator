@@ -124,28 +124,6 @@ rangeZEl.addEventListener("input", (e) => {
 });
 
 // -------functions
-function isPointInPolygon(point, poligon) {
-  const { x, y } = point;
-
-  const xArr = poligon.map((el) => el.x);
-  const yArr = poligon.map((el) => el.y);
-
-  const len = poligon.length;
-  let j = len - 1;
-  let res = false;
-  for (let i = 0; i < poligon.length; i += 1) {
-    if (
-      ((yArr[i] <= y && y < yArr[j]) || (yArr[j] <= y && y < yArr[i])) &&
-      x > ((xArr[j] - xArr[i]) * (y - yArr[i])) / (yArr[j] - yArr[i]) + xArr[i]
-    ) {
-      res = !res;
-    }
-    j = i;
-  }
-
-  return res;
-}
-
 function initScene() {
   scene = new THREE.Scene();
   scene.background = new THREE.Color("white");
@@ -198,19 +176,6 @@ function initScene() {
 
 function render() {
   renderer.render(scene, camera);
-}
-
-function isPointAtFixedPoints(fixedPoints, point) {
-  return fixedPoints.find((curPoint) => isEqualPoints(curPoint, point));
-}
-
-function isEqualPoints(p1, p2) {
-  const lim = 0.1;
-  return (
-    Math.abs(p1.x - p2.x) < lim &&
-    Math.abs(p1.y - p2.y) < lim &&
-    Math.abs(p1.z - p2.z) < lim
-  );
 }
 
 function updateAllGeometries() {
@@ -324,24 +289,24 @@ function getUpdatedGeometryFrame(params) {
       pos.set([point.x + deltaX / 2, point.y, point.z], i);
       dx = pos[i] - initPos[i];
       uv.set([uv[iUV] + dx * ratioUV, uv[iUV + 1]], iUV);
-    } else if (isPointInPolygon(point, this.initParams.topPolygon)) {
+    } else if (this.isPointInPolygon(point, this.initParams.topPolygon)) {
       // розтягуємо по ОХ і зміщуємо вверх
       pos.set([point.x * scaleX, point.y + deltaY, point.z], i);
       dx = pos[i] - initPos[i];
       dy = pos[i + 1] - initPos[i + 1];
       uv.set([uv[iUV] + dx * ratioUV, uv[iUV + 1] - dy * ratioUV], iUV);
-    } else if (isPointInPolygon(point, this.initParams.bottomPolygon)) {
+    } else if (this.isPointInPolygon(point, this.initParams.bottomPolygon)) {
       // розтягуємо по ОХ
       pos.set([point.x * scaleX, point.y, point.z], i);
       dx = pos[i] - initPos[i];
       uv.set([uv[iUV] + dx * ratioUV, uv[iUV + 1]], iUV);
-    } else if (isPointInPolygon(point, this.initParams.leftPolygon)) {
+    } else if (this.isPointInPolygon(point, this.initParams.leftPolygon)) {
       // розтягуємо по ОY і зміщуєм вліво
       pos.set([point.x - deltaX / 2, point.y * scaleY, point.z], i);
       dx = pos[i] - initPos[i];
       dy = pos[i + 1] - initPos[i + 1];
       uv.set([uv[iUV] + dx * ratioUV, uv[iUV + 1] - dy * ratioUV], iUV);
-    } else if (isPointInPolygon(point, this.initParams.rightPolygon)) {
+    } else if (this.isPointInPolygon(point, this.initParams.rightPolygon)) {
       // розтягуємо по ОY і зміщуємо вправо
       pos.set([point.x + deltaX / 2, point.y * scaleY, point.z], i);
       dx = pos[i] - initPos[i];

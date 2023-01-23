@@ -7,7 +7,7 @@ const rangeThicknessEl = document.querySelector("#rangeTh");
 const frameImgCont = document.querySelector("#frame-img");
 frameImgCont.addEventListener("click", (e) => {
   const id = e.target.dataset.id;
-  materialLoader.setMaterial(frameMesh, id);
+  materialLoader.setMaterialOnMesh(frameMesh, id);
 });
 
 const loaderCubeText = new THREE.CubeTextureLoader();
@@ -44,8 +44,12 @@ let frontUpdater = null;
 let backUpdater = null;
 
 const materialLoader = new MaterialLoader();
+materialLoader.frameMaterialIds = ["32729", "32611", "738", "2053"];
+materialLoader.frontMaterialIds = ["32506", "774"];
+materialLoader.backMaterialIds = ["32716"];
+materialLoader.lampMaterialIds = ["1555"];
 
-materialLoader.generateMarkup(materialLoader.frameMaterialIds);
+materialLoader.generatePrevMarkup(materialLoader.frameMaterialIds);
 
 initScene();
 
@@ -77,10 +81,10 @@ loaderGLTF.load("./models/frame-lamp-fixed.glb", async function (gltf) {
   lampUpdater.setInitParams = setInitParamsLamp;
   lampUpdater.setInitParams(data);
 
-  materialLoader.setMaterial(frameMesh, materialLoader.frameMaterialIds[0]);
-  materialLoader.setMaterial(backMesh, materialLoader.backMaterialIds[0]);
-  materialLoader.setMaterial(frontMesh, materialLoader.frontMaterialIds[0]);
-  materialLoader.setMaterial(lampMesh, materialLoader.lampMaterialIds[0]);
+  materialLoader.setMaterialOnMesh(frameMesh, materialLoader.frameMaterialIds[0]);
+  materialLoader.setMaterialOnMesh(backMesh, materialLoader.backMaterialIds[0]);
+  materialLoader.setMaterialOnMesh(frontMesh, materialLoader.frontMaterialIds[0]);
+  materialLoader.setMaterialOnMesh(lampMesh, materialLoader.lampMaterialIds[0]);
 
   curParams.width = Math.round(frameUpdater.size.width);
   curParams.height = Math.round(frameUpdater.size.height);
@@ -141,28 +145,6 @@ rangeThicknessEl.addEventListener("input", (e) => {
 });
 
 // -------functions
-function isPointInPolygon(point, poligon) {
-  const { x, y } = point;
-
-  const xArr = poligon.map((el) => el.x);
-  const yArr = poligon.map((el) => el.y);
-
-  const len = poligon.length;
-  let j = len - 1;
-  let res = false;
-  for (let i = 0; i < poligon.length; i += 1) {
-    if (
-      ((yArr[i] <= y && y < yArr[j]) || (yArr[j] <= y && y < yArr[i])) &&
-      x > ((xArr[j] - xArr[i]) * (y - yArr[i])) / (yArr[j] - yArr[i]) + xArr[i]
-    ) {
-      res = !res;
-    }
-    j = i;
-  }
-
-  return res;
-}
-
 function initScene() {
   scene = new THREE.Scene();
   scene.background = new THREE.Color("white");
@@ -215,19 +197,6 @@ function initScene() {
 
 function render() {
   renderer.render(scene, camera);
-}
-
-function isPointAtFixedPoints(fixedPoints, point) {
-  return fixedPoints.find((curPoint) => isEqualPoints(curPoint, point));
-}
-
-function isEqualPoints(p1, p2) {
-  const lim = 0.1;
-  return (
-    Math.abs(p1.x - p2.x) < lim &&
-    Math.abs(p1.y - p2.y) < lim &&
-    Math.abs(p1.z - p2.z) < lim
-  );
 }
 
 function updateAllGeometries() {
@@ -304,8 +273,6 @@ function getUpdatedGeometryFrame(params) {
   this.delta = this.calcDelta(params);
   this.scale = this.calcScale(params);
 
-  const deltaX = this.delta.dx;
-  const deltaY = this.delta.dy;
   const scaleX = this.scale.x;
   const scaleY = this.scale.y;
 
@@ -329,7 +296,6 @@ function getUpdatedGeometryFrame(params) {
     ];
   const O = this.initParams.fixedPoints.bottomLeft[0];
 
-  // const scaleT = params.thickness / this.thicknessX;
   const scaleTX = params.thickness / this.thicknessX;
   const scaleTY = params.thickness / this.thicknessY;
   const kx = params.width / 2 - params.thickness;
@@ -401,13 +367,13 @@ function getUpdatedGeometryFrame(params) {
       dx = pos[i] - initPos[i];
       dy = pos[i + 1] - initPos[i + 1];
       uv.set([uv[iUV] + dx * ratioUV, uv[iUV + 1] - dy * ratioUV], iUV);
-    } else if (isPointInPolygon(point, this.initParams.topPolygon)) {
+    } else if (this.isPointInPolygon(point, this.initParams.topPolygon)) {
       // розтягуємо по ОХ і зміщуємо вверх
       pos.set([point.x * scaleX, (point.y - M.y) * scaleTY + ky, point.z], i);
       dx = pos[i] - initPos[i];
       dy = pos[i + 1] - initPos[i + 1];
       uv.set([uv[iUV] + dx * ratioUV, uv[iUV + 1] - dy * ratioUV], iUV);
-    } else if (isPointInPolygon(point, this.initParams.bottomPolygon)) {
+    } else if (this.isPointInPolygon(point, this.initParams.bottomPolygon)) {
       // розтягуємо по ОХ
       pos.set(
         [point.x * scaleX, (point.y - N.y) * scaleTY + params.thickness, point.z],
@@ -416,13 +382,13 @@ function getUpdatedGeometryFrame(params) {
       dx = pos[i] - initPos[i];
       dy = pos[i + 1] - initPos[i + 1];
       uv.set([uv[iUV] + dx * ratioUV, uv[iUV + 1] - dy * ratioUV], iUV);
-    } else if (isPointInPolygon(point, this.initParams.leftPolygon)) {
+    } else if (this.isPointInPolygon(point, this.initParams.leftPolygon)) {
       // розтягуємо по ОY і зміщуєм вліво
       pos.set([(point.x + Math.abs(L.x)) * scaleTX - kx, point.y * scaleY, point.z], i);
       dx = pos[i] - initPos[i];
       dy = pos[i + 1] - initPos[i + 1];
       uv.set([uv[iUV] + dx * ratioUV, uv[iUV + 1] - dy * ratioUV], iUV);
-    } else if (isPointInPolygon(point, this.initParams.rightPolygon)) {
+    } else if (this.isPointInPolygon(point, this.initParams.rightPolygon)) {
       // розтягуємо по ОY і зміщуємо вправо
       pos.set([(point.x - M.x) * scaleTX + kx, point.y * scaleY, point.z], i);
       dx = pos[i] - initPos[i];

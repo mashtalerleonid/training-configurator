@@ -13,53 +13,46 @@
       <a href="./index-models.html" rel="noopener noreferrer">Models</a>
       <a href="./index.html" rel="noopener noreferrer">Frame</a>
     </nav>
+
     <div class="input-wr">
-      <input class="rx" type="range" name="" id="rangeX" min="90" max="300" value="0" />
+      <input class="rx" type="range" name="" id="rangeX" min="50" max="400" value="0" />
       <span>Width</span>
     </div>
+
     <div class="input-wr">
       <input
         class="ry"
         type="range"
         name=""
         id="rangeY"
-        min="140"
-        max="300"
+        min="50"
+        max="400"
         value="0"
         step="1"
       />
       <span>Height</span>
     </div>
+
     <div class="input-wr">
-      <input class="rz" type="range" name="" id="rangeDist" min="10" max="70" value="0" />
-      <span>Lamp top dist</span>
+      <input class="rz" type="range" name="" id="rangeZ" min="50" max="400" value="0" />
+      <span>Depth</span>
     </div>
-    <div class="input-wr">
-      <input
-        class="ry"
-        type="range"
-        name=""
-        id="rangeTh"
-        min="15"
-        max="40"
-        value="0"
-        step="1"
-      />
-      <span>Thickness</span>
-    </div>
-    <div class="list" id="frame-img"></div>
+
     <!-- <div class="input-wr">
       <input
         class="rz"
         type="range"
         name=""
-        id="range"
-        min="100"
-        max="4000"
-        value="1000"
+        id="rangeAll"
+        min="1"
+        max="5"
+        value="0"
+        step="0.1"
       />
       <span>All</span>
     </div> -->
+
+    <div class="list" id="frame-img"></div>
 
     <canvas id="canvas-3d"></canvas>
 
@@ -69,9 +62,7 @@
     <script src="./js/GLTFExporter.js"></script>
 
     <script src="./js/MaterialLoader.js"></script>
-    <script src="./js/GeometryUpdater.js"></script>
-    <script src="./js/data.js"></script>
-    <!-- <script src="./js/frame-config.js"></script> -->
-    <script src="./js/frame-config-thickness.js"></script>
+    <script src="./js/ModelGeometryUpdater.js"></script>
+    <script src="./js/models-config.js"></script>
   </body>
 </html>

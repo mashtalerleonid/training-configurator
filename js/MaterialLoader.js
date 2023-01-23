@@ -1,14 +1,9 @@
 class MaterialLoader {
   constructor() {
     this.loaderGLTF = new THREE.GLTFLoader();
-
-    this.frameMaterialIds = ["32729", "32611", "738", "2053"];
-    this.frontMaterialIds = ["32506", "774"];
-    this.backMaterialIds = ["32716"];
-    this.lampMaterialIds = ["1555"];
   }
 
-  async fetchMaterialData(id) {
+  async fetchData(id) {
     const headers = {
       "x-lang": "ua",
       "Content-type": "application/x-www-form-urlencoded",
@@ -29,6 +24,22 @@ class MaterialLoader {
     return loadedData;
   }
 
+  async fetchModelGLB(src) {
+    return new Promise((resolve, reject) => {
+      this.loaderGLTF.load(src, (gltf) => {
+        console.log(gltf.scene);
+
+        const obj3D = new THREE.Object3D();
+        gltf.scene.traverse((el) => {
+          if (el.type === "Mesh") {
+            obj3D.add(el.clone());
+          }
+        });
+        resolve(obj3D);
+      });
+    });
+  }
+
   async fetchMaterialGLB(loadedData) {
     const src = loadedData.products[0].source.body.package;
 
@@ -40,8 +51,8 @@ class MaterialLoader {
     });
   }
 
-  setMaterial(mesh, id) {
-    this.fetchMaterialData(id)
+  setMaterialOnMesh(mesh, id) {
+    this.fetchData(id)
       .then((data) => this.fetchMaterialGLB(data))
       .then((material) => {
         mesh.material = material;
@@ -50,11 +61,26 @@ class MaterialLoader {
       });
   }
 
-  generateMarkup(idList) {
+  setTestMaterialOnMesh(mesh) {
+    mesh.material = this.testMaterial;
+    render();
+  }
+
+  loadMaterialGLB(id) {
+    return new Promise((resolve, reject) => {
+      this.fetchData(id)
+        .then((data) => this.fetchMaterialGLB(data))
+        .then((material) => {
+          resolve(material);
+        });
+    });
+  }
+
+  generatePrevMarkup(idList) {
     const dataList = [];
     let markup = null;
     idList.forEach((id) => {
-      this.fetchMaterialData(id).then((data) => {
+      this.fetchData(id).then((data) => {
         dataList.push({
           id: data.products[0].id,
           src: `https://dev.roomtodo.com${data.products[0].source.images.preview}`,

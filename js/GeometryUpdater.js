@@ -3,29 +3,14 @@ class GeometryUpdater {
     this.geometry = mesh.geometry.clone();
     this.uv = this.geometry.attributes.uv.array;
     this.pos = this.geometry.attributes.position.array;
+    this.normal = this.geometry.attributes.normal.array;
+    this.index = this.geometry.index.array;
     this.bbox = new THREE.Box3().setFromObject(mesh);
     this.size = this.calcSize();
-    this.bboxUV = this.calcBboxUV();
     this.scale = this.calcScale({});
     this.delta = this.calcDelta({});
     this.ratioUV = this.calcRatioUV();
     this.initParams = {};
-  }
-
-  calcBboxUV() {
-    const uCoords = this.uv.filter((el, i) => i % 2 === 0);
-    const vCoords = this.uv.filter((el, i) => i % 2 === 1);
-
-    return {
-      max: {
-        u: Math.max(...uCoords),
-        v: Math.max(...vCoords),
-      },
-      min: {
-        u: Math.min(...uCoords),
-        v: Math.min(...vCoords),
-      },
-    };
   }
 
   calcSize() {
@@ -60,11 +45,39 @@ class GeometryUpdater {
     };
   }
 
-  calcRatioUV(isUonX = true) {
-    // ф-я залежить від того як напрямлені осі UV
-    return isUonX
-      ? (this.bboxUV.max.u - this.bboxUV.min.u) / (this.bbox.max.x - this.bbox.min.x)
-      : (this.bboxUV.max.u - this.bboxUV.min.u) / (this.bbox.max.y - this.bbox.min.y);
+  calcRatioUV() {
+    const index = this.index;
+    const uv = this.uv;
+    const pos = this.pos;
+
+    const indA = index[0];
+    const indB = index[1];
+
+    const uvA = { u: uv[indA * 2], v: uv[indA * 2 + 1] };
+    const uvB = { u: uv[indB * 2], v: uv[indB * 2 + 1] };
+
+    const posA = {
+      x: pos[indA * 3],
+      y: pos[indA * 3 + 1],
+      z: pos[indA * 3 + 2],
+    };
+    const posB = {
+      x: pos[indB * 3],
+      y: pos[indB * 3 + 1],
+      z: pos[indB * 3 + 2],
+    };
+
+    const posDistAB = Math.sqrt(
+      Math.pow(posB.x - posA.x, 2) +
+        Math.pow(posB.y - posA.y, 2) +
+        Math.pow(posB.z - posA.z, 2)
+    );
+
+    const uvDistAB = Math.sqrt(Math.pow(uvB.u - uvA.u, 2) + Math.pow(uvB.v - uvA.v, 2));
+
+    const ratioUV = uvDistAB / posDistAB;
+
+    return ratioUV;
   }
 
   setInitParams() {
