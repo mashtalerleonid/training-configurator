@@ -98,4 +98,12 @@ class MaterialLoader {
       });
     });
   }
+
+  generateButtonMarkup(data) {
+    frameImgCont.innerHTML = data
+      .map((el) => {
+        return `<div class="item" data-src="${el.src}">${el.name}</div>`;
+      })
+      .join("");
+  }
 }

@@ -37,9 +37,14 @@ input {
 }
 
 .item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   margin-right: 10px;
   width: 100px;
-  height: 100px;
+  height: 50px;
+  border: 2px solid tomato;
+  cursor: pointer;
 }
 
 .item > img {

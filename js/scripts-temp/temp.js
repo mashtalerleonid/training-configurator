@@ -1,682 +1,1540 @@
-// temp
-// { x: 49.045, y: 169.253 },
-// { x: 47.2, y: 167.014 },
-// { x: 44.639, y: 164.26 },
-// { x: 42.968, y: 162.672 },
-// { x: 41.724, y: 161.292 },
-// { x: 38.376, y: 158.413 },
-// { x: 36.73, y: 156.785 },
-// { x: 35.294, y: 155.591 },
-// { x: 29.846, y: 149.868 },
-// { x: 27.743, y: 147.546 },
+if (
+  (Math.abs(anglesOY.OY_AB - anglesUP.AB) < lim &&
+    Math.abs(anglesOY.OY_BC - anglesUP.BC) < lim) ||
+  (Math.abs(anglesOY.OY_BC - anglesUP.BC) < lim &&
+    Math.abs(anglesOY.OY_CA - anglesUP.CA) < lim) ||
+  (Math.abs(anglesOY.OY_AB - anglesUP.AB) < lim &&
+    Math.abs(anglesOY.OY_CA - anglesUP.CA) < lim)
+) {
+  dir = "UP";
+} else if (
+  (Math.abs(anglesOY.OY_AB - anglesUN.AB) < lim &&
+    Math.abs(anglesOY.OY_BC - anglesUN.BC) < lim) ||
+  (Math.abs(anglesOY.OY_BC - anglesUN.BC) < lim &&
+    Math.abs(anglesOY.OY_CA - anglesUN.CA) < lim) ||
+  (Math.abs(anglesOY.OY_AB - anglesUN.AB) < lim &&
+    Math.abs(anglesOY.OY_CA - anglesUN.CA) < lim)
+) {
+  dir = "UN";
+} else if (
+  (Math.abs(anglesOY.OY_AB - anglesVP.AB) < lim &&
+    Math.abs(anglesOY.OY_BC - anglesVP.BC) < lim) ||
+  (Math.abs(anglesOY.OY_BC - anglesVP.BC) < lim &&
+    Math.abs(anglesOY.OY_CA - anglesVP.CA) < lim) ||
+  (Math.abs(anglesOY.OY_AB - anglesVP.AB) < lim &&
+    Math.abs(anglesOY.OY_CA - anglesVP.CA) < lim)
+) {
+  dir = "VP";
+} else if (
+  (Math.abs(anglesOY.OY_AB - anglesVN.AB) < lim &&
+    Math.abs(anglesOY.OY_BC - anglesVN.BC) < lim) ||
+  (Math.abs(anglesOY.OY_BC - anglesVN.BC) < lim &&
+    Math.abs(anglesOY.OY_CA - anglesVN.CA) < lim) ||
+  (Math.abs(anglesOY.OY_AB - anglesVN.AB) < lim &&
+    Math.abs(anglesOY.OY_CA - anglesVN.CA) < lim)
+) {
+  dir = "VN";
+} else {
+  console.log("out of range");
+}
 
-// { x: initParams.E.x, y: initParams.E.y },
-// { x: initParams.F.x, y: initParams.F.y },
+// ----------------------------------------------
 
-// { x: 22.105 + dx - 0, y: 169.26 },
-// { x: 25.31 + dx - 0, y: 167.05 },
-// { x: 25.207 + dx - 0, y: 152.715 },
-// { x: 24.885 + dx - 0, y: 149.89 },
-// { x: 24.63 + dx - 0, y: 147.73 },
+if (getAngle(plane.normal, OY) < 90) {
+  angleOYandABC = (getAngle(plane.normal, OY) * Math.PI) / 180;
+  if (plane.normal.z > 0) {
+    OYinYOZ = {
+      x: 0,
+      y: Math.sin(angleOYandABC),
+      z: -Math.cos(angleOYandABC),
+    };
+  } else if (plane.normal.z < 0) {
+    OYinYOZ = {
+      x: 0,
+      y: Math.sin(angleOYandABC),
+      z: Math.cos(angleOYandABC),
+    };
+  }
+} else if (getAngle(plane.normal, OY) > 90) {
+  angleOYandABC = ((getAngle(plane.normal, OY) - 90) * Math.PI) / 180;
 
-// старі змінні
-// let sc = 2;
-// let k = 200;
-// let pos = [];
-// let uv = [];
-// let normal = [];
-// let index = [];
-// let prevX = 1;
-// let prevY = 1;
-// let prevZ = 1;
-// let prev = 1;
-// let d = 0;
-// //
+  if (plane.normal.z > 0) {
+    OYinYOZ = {
+      x: 0,
+      y: Math.cos(angleOYandABC),
+      z: Math.sin(angleOYandABC),
+    };
+  } else if (plane.normal.z < 0) {
+    OYinYOZ = {
+      x: 0,
+      y: Math.cos(angleOYandABC),
+      z: -Math.sin(angleOYandABC),
+    };
+  }
+} else if (getAngle(plane.normal, OY) === 0) {
+  OYinYOZ = {
+    x: 0,
+    y: 0,
+    z: 1,
+  };
+} else if (getAngle(plane.normal, OY) === 90) {
+  OYinYOZ = {
+    x: 0,
+    y: 1,
+    z: 0,
+  };
+}
 
-// function fooXOld(value) {
-//   sc = value / prevX;
-//   if (sc > 1) {
-//     d = sc;
+// ---------------------------------------------
 
-//     // d = Math.abs(d) * -1;
-//   } else {
-//     d = -sc;
-//   }
-//   // console.log(sc);
-//   prevX = value;
-//   obj.children.forEach((mesh, index) => {
-//     // let geo = geomArr[index].clone();
-//     // uv = geomArr[index].attributes.uv.array;
-//     // normal = geomArr[index].attributes.normal.array;
-//     let geo = mesh.geometry;
-//     uv = geo.attributes.uv.array;
-//     normal = geo.attributes.normal.array;
-//     pos = geo.attributes.position.array;
-//     index = geo.attributes.index;
-//     // console.log("pos.length", pos.length);
-//     // geo.scale(sc, 1, 1);
-//     // mesh.scale.x *= sc;
-//     // mesh.scale.set(value, 1, 1);
-//     // for (let i = 0; i < uv.length; i += 2) {
-//     for (let i = 0; i < pos.length - 3; i += 3) {
-//       // console.log(i);
-//       // if (Math.abs(normal[(i / 2) * 3]) > 0.9) {
-//       //   uv.set([uv[i], uv[i + 1]], i);
-//       // } else {
-//       //   uv.set([uv[i] * sc, uv[i + 1]], i);
-//       // }
-//       if (pos[i] > xL && pos[i] < xM) {
-//         // if (true) {
-//         // console.log(pos[i * 3]);
-//         // pos.set([pos[i] * sc], i);
-//         pos.set([pos[i] * sc, pos[i + 1], pos[i + 2]], i);
-//         // console.log(pos[i * 3]);
-//       } else if (pos[i] > xM) {
-//         pos.set([pos[i] + d, pos[i + 1], pos[i + 2]], i);
-//       }
-//     }
-//     geo.attributes.position.needsUpdate = true;
-//     // mesh.geometry.copy(geo);
-//   });
-// }
+updateMeshUVWork(mesh, addScale) {
+    function calcDelta(mesh, point, addScale) {
+      return {
+        dx: point.x * mesh.scale.x - (point.x * mesh.scale.x) / addScale.x,
+        dy: point.y * mesh.scale.y - (point.y * mesh.scale.y) / addScale.y,
+        dz: point.z * mesh.scale.z - (point.z * mesh.scale.z) / addScale.z,
+      };
+    }
 
-// ---------------------------
+    const uv = mesh.geometry.attributes.uv.array;
+    const pos = mesh.geometry.attributes.position.array;
+    const normal = mesh.geometry.attributes.normal.array;
 
-// function fooAll(value) {
-//   // -------правильне збільшення UV при масштабування всіх вимірів
-//   sc = value / prev;
-//   d = value - prev;
-//   prev = value;
+    const ratioUV = mesh.ratioUV;
 
-//   obj.children.forEach((mesh, index) => {
-//     // let geo = geomArr[index].clone();
-//     // geo.scale(value, value, value);
-//     // mesh.geometry.copy(geo);
-//     //   // mesh.scale.set(1, 1, value);
-//     mesh.scale.set(value, value, value);
-//     mesh.geometry.attributes.uv.array.forEach(function (element, index) {
-//       mesh.geometry.attributes.uv.array.set([element * sc], index);
-//     });
-//     mesh.geometry.attributes.uv.needsUpdate = true;
-//   });
-//   // -------END правильне збільшення UV при масштабування всіх вимірів
-// }
+    for (let i = 0; i < pos.length; i += 3) {
+      const point = {
+        x: pos[i],
+        y: pos[i + 1],
+        z: pos[i + 2],
+      };
+
+      const iUV = (i / 3) * 2;
+
+      const { dx, dy, dz } = calcDelta(mesh, point, addScale);
+
+      const lim = 0.7;
+
+      const kx = normal[i] > 0 ? 1 : -1;
+      const ky = normal[i + 1] > 0 ? 1 : -1;
+      const kz = normal[i + 2] > 0 ? 1 : -1;
+
+      if (Math.abs(normal[i]) > lim) {
+        uv.set([uv[iUV] - kx * dz * ratioUV, uv[iUV + 1] - dy * ratioUV], iUV);
+      } else if (Math.abs(normal[i + 1]) > lim) {
+        uv.set([uv[iUV] + dx * ratioUV, uv[iUV + 1] + ky * dz * ratioUV], iUV);
+      } else if (Math.abs(normal[i + 2]) > lim) {
+        uv.set([uv[iUV] + kz * dx * ratioUV, uv[iUV + 1] - dy * ratioUV], iUV);
+      }
+    }
+
+    mesh.geometry.attributes.uv.needsUpdate = true;
+}
+  
+// ---------------------------------------------------
+
+updateMeshUV(mesh, addScale) {
+    function calcDelta(mesh, point, addScale) {
+      return {
+        dx: point.x * mesh.scale.x - (point.x * mesh.scale.x) / addScale.x,
+        dy: point.y * mesh.scale.y - (point.y * mesh.scale.y) / addScale.y,
+        dz: point.z * mesh.scale.z - (point.z * mesh.scale.z) / addScale.z,
+      };
+    }
+    // const updatedGeo = this.initGeo.clone();
+    // const uv = updatedGeo.attributes.uv.array;
+    const uv = mesh.geometry.attributes.uv.array;
+    // const uvInit = this.initGeo.attributes.uv.array;
+    const uvInit = [...uv];
+    const pos = mesh.geometry.attributes.position.array;
+    // const normal = mesh.geometry.attributes.normal.array;
+    const index = mesh.geometry.index.array;
+
+    for (let i = 0; i < index.length; i += 3) {
+      const indA = index[i];
+      const indB = index[i + 1];
+      const indC = index[i + 2];
+      // console.log("indA", indA, "indB", indB, "indC", indC);
+
+      const A = {
+        x: pos[indA * 3],
+        y: pos[indA * 3 + 1],
+        z: pos[indA * 3 + 2],
+        u: uvInit[indA * 2],
+        v: uvInit[indA * 2 + 1],
+      };
+
+      const B = {
+        x: pos[indB * 3],
+        y: pos[indB * 3 + 1],
+        z: pos[indB * 3 + 2],
+        u: uvInit[indB * 2],
+        v: uvInit[indB * 2 + 1],
+      };
+
+      const C = {
+        x: pos[indC * 3],
+        y: pos[indC * 3 + 1],
+        z: pos[indC * 3 + 2],
+        u: uvInit[indC * 2],
+        v: uvInit[indC * 2 + 1],
+      };
+
+      const arr = [A, B, C];
+
+      let dir = "";
+
+      let scale = 1;
+      // let scaleY = 1;
+      // let scaleZ = 1;
+      let k = 1000;
+      let scaleDir = "";
+
+      if (addScale.x !== 1) {
+        scaleDir = "X";
+      } else if (addScale.y !== 1) {
+        scaleDir = "Y";
+      } else if (addScale.z !== 1) {
+        scaleDir = "Z";
+      } else {
+        return;
+      }
+
+      // console.log(scaleDir);
+
+      // if (A.x === B.x && B.x === C.x) {
+      //   scaleX = 1;
+      // } else if (A.x !== B.x) {
+      //   scaleX = (A.x * mesh.scale.x - B.x * mesh.scale.x) / (A.x - B.x);
+      // } else if (B.x !== C.x) {
+      //   scaleX = (B.x * mesh.scale.x - C.x * mesh.scale.x) / (B.x - C.x);
+      // } else {
+      //   console.log("lost point");
+      //   scaleX = 1;
+      // }
+
+      if (scaleDir === "X") {
+        if (A.x === B.x && B.x === C.x) {
+          scale = 1;
+          // } else if (true) {
+        } else if (A.x !== B.x) {
+          scale =
+            (A.x * mesh.scale.x - B.x * mesh.scale.x) /
+            ((A.x * mesh.scale.x) / addScale.x - (B.x * mesh.scale.x) / addScale.x);
+        } else if (B.x !== C.x) {
+          scale =
+            (B.x * mesh.scale.x - C.x * mesh.scale.x) /
+            ((B.x * mesh.scale.x) / addScale.x - (C.x * mesh.scale.x) / addScale.x);
+        } else {
+          console.log("lost point");
+          scale = 1;
+        }
+
+        // if (A.x === B.x) {
+        //   if (A.u === B.u) {
+        //     dir = "XU";
+        //   } else {
+        //     dir = "XV";
+        //   }
+        // } else if (B.x === C.x) {
+        //   if (B.u === C.u) {
+        //     dir = "XU";
+        //   } else {
+        //     dir = "XV";
+        //   }
+        // } else if (A.x === C.x) {
+        //   if (A.u === C.u) {
+        //     dir = "XU";
+        //   } else {
+        //     dir = "XV";
+        //   }
+        // } else
+        {
+          arr.sort((a, b) => a.x - b.x);
+          if (
+            (arr[0].u <= arr[1].u && arr[1].u <= arr[2].u) ||
+            (arr[0].u >= arr[1].u && arr[1].u >= arr[2].u)
+          ) {
+            dir = "XU";
+          } else {
+            dir = "XV";
+          }
+        }
+      } else if (scaleDir === "Y") {
+        if (A.y === B.y && B.y === C.y) {
+          scale = 1;
+        } else if (A.y !== B.y) {
+          scale =
+            (A.y * mesh.scale.y - B.y * mesh.scale.y) /
+            ((A.y * mesh.scale.y) / addScale.y - (B.y * mesh.scale.y) / addScale.y);
+        } else if (B.y !== C.y) {
+          scale =
+            (B.y * mesh.scale.y - C.y * mesh.scale.y) /
+            ((B.y * mesh.scale.y) / addScale.y - (C.y * mesh.scale.y) / addScale.y);
+        } else {
+          console.log("lost point");
+          scale = 1;
+        }
+
+        if (A.y === B.y) {
+          if (A.u === B.u) {
+            dir = "XU";
+          } else {
+            dir = "XV";
+          }
+        } else if (B.y === C.y) {
+          if (B.u === C.u) {
+            dir = "XU";
+          } else {
+            dir = "XV";
+          }
+        } else if (A.y === C.y) {
+          if (A.u === C.u) {
+            dir = "XU";
+          } else {
+            dir = "XV";
+          }
+        } else {
+          arr.sort((a, b) => a.y - b.y);
+          if (
+            (Math.round(arr[0].u * k) / k <= Math.round(arr[1].u * k) / k &&
+              Math.round(arr[1].u * k) / k <= Math.round(arr[2].u * k) / k) ||
+            (Math.round(arr[0].u * k) / k >= Math.round(arr[1].u * k) / k &&
+              Math.round(arr[1].u * k) / k >= Math.round(arr[2].u * k) / k)
+          ) {
+            dir = "XU";
+          } else {
+            dir = "XV";
+          }
+        }
+      } else if (scaleDir === "Z") {
+        if (A.z === B.z && B.z === C.z) {
+          scale = 1;
+        } else if (A.z !== B.z) {
+          scale =
+            (A.z * mesh.scale.z - B.z * mesh.scale.z) /
+            ((A.z * mesh.scale.z) / addScale.z - (B.z * mesh.scale.z) / addScale.z);
+        } else if (B.z !== C.z) {
+          scale =
+            (B.z * mesh.scale.z - C.z * mesh.scale.z) /
+            ((B.z * mesh.scale.z) / addScale.z - (C.z * mesh.scale.z) / addScale.z);
+        } else {
+          console.log("lost point");
+          scale = 1;
+        }
+
+        if (A.z === B.z) {
+          if (A.u === B.u) {
+            dir = "XU";
+          } else {
+            dir = "XV";
+          }
+        } else if (B.z === C.z) {
+          if (B.u === C.u) {
+            dir = "XU";
+          } else {
+            dir = "XV";
+          }
+        } else if (A.z === C.z) {
+          if (A.u === C.u) {
+            dir = "XU";
+          } else {
+            dir = "XV";
+          }
+        } else {
+          arr.sort((a, b) => a.z - b.z);
+          if (
+            (Math.round(arr[0].u * k) / k <= Math.round(arr[1].u * k) / k &&
+              Math.round(arr[1].u * k) / k <= Math.round(arr[2].u * k) / k) ||
+            (Math.round(arr[0].u * k) / k >= Math.round(arr[1].u * k) / k &&
+              Math.round(arr[1].u * k) / k >= Math.round(arr[2].u * k) / k)
+          ) {
+            dir = "XU";
+          } else {
+            dir = "XV";
+          }
+        }
+      }
+
+      if (dir === "XU") {
+        uv.set([A.u * scale], indA * 2);
+        uv.set([B.u * scale], indB * 2);
+        uv.set([C.u * scale], indC * 2);
+      } else {
+        uv.set([A.v * scale], indA * 2 + 1);
+        uv.set([B.v * scale], indB * 2 + 1);
+        uv.set([C.v * scale], indC * 2 + 1);
+      }
+    }
+
+    // mesh.geometry.attributes.uv = updatedGeo.attributes.uv;
+    mesh.geometry.attributes.uv.needsUpdate = true;
+}
+  
+// -----------------------
+
+  const ABV3 = new THREE.Vector3(B.x - A.x, B.y - A.y, B.z - A.z);
+
+        const AB = { x: p.B.x - p.A.x, y: p.B.y - p.A.y, z: p.B.z - p.A.z };
+        const BC = { x: p.C.x - p.B.x, y: p.C.y - p.B.y, z: p.C.z - p.B.z };
+        const CA = { x: p.A.x - p.C.x, y: p.A.y - p.C.y, z: p.A.z - p.C.z };
+
+        const AV3 = new THREE.Vector3(p.A.x, p.A.y, p.A.z);
+        const BV3 = new THREE.Vector3(p.B.x, p.B.y, p.B.z);
+        const CV3 = new THREE.Vector3(p.C.x, p.C.y, p.C.z);
+
+        const ABinXY = { x: p.B.v - p.A.v, y: p.B.u - p.A.u, z: 0 };
+        const BCinXY = { x: p.C.v - p.B.v, y: p.C.u - p.B.u, z: 0 };
+        const CAinXY = { x: p.A.v - p.C.v, y: p.A.u - p.C.u, z: 0 };
+        ----------------------
+        const A = new THREE.Vector3(p.A.x, p.A.y, p.A.z);
+        const B = new THREE.Vector3(p.B.x, p.B.y, p.B.z);
+        const C = new THREE.Vector3(p.C.x, p.C.y, p.C.z);
+
+        const AB = new THREE.Vector3().subVectors(B, A);
+        const BC = new THREE.Vector3().subVectors(C, B);
+        const CA = new THREE.Vector3().subVectors(A, C);
+
+        const Auv = new THREE.Vector3(p.A.v, p.A.u, 0);
+        const Buv = new THREE.Vector3(p.B.v, p.B.u, 0);
+        const Cuv = new THREE.Vector3(p.C.v, p.C.u, 0);
+
+        const ABuv = new THREE.Vector3().subVectors(Buv, Auv);
+        const BCuv = new THREE.Vector3().subVectors(Cuv, Buv);
+        const CAuv = new THREE.Vector3().subVectors(Auv, Cuv);
+        -------------------------
+
+        const ABinXY = { x: p.B.v - p.A.v, y: p.B.u - p.A.u, z: 0 };
+        const BCinXY = { x: p.C.v - p.B.v, y: p.C.u - p.B.u, z: 0 };
+        const CAinXY = { x: p.A.v - p.C.v, y: p.A.u - p.C.u, z: 0 };
+
+        // -----------------------------
+
+         if (scaleDir === "XX") {
+        // const angUPosToABC = {
+        //   AB: (UPos.angleTo(ABuv) * 180) / Math.PI,
+        //   BC: (UPos.angleTo(BCuv) * 180) / Math.PI,
+        //   CA: (UPos.angleTo(CAuv) * 180) / Math.PI,
+        // };
+        // const angUNegToABC = {
+        //   AB: (UNeg.angleTo(ABuv) * 180) / Math.PI,
+        //   BC: (UNeg.angleTo(BCuv) * 180) / Math.PI,
+        //   CA: (UNeg.angleTo(CAuv) * 180) / Math.PI,
+        // };
+        // const angVPosToABC = {
+        //   AB: (VPos.angleTo(ABuv) * 180) / Math.PI,
+        //   BC: (VPos.angleTo(BCuv) * 180) / Math.PI,
+        //   CA: (VPos.angleTo(CAuv) * 180) / Math.PI,
+        // };
+        // const angVNegToABC = {
+        //   AB: (VNeg.angleTo(ABuv) * 180) / Math.PI,
+        //   BC: (VNeg.angleTo(BCuv) * 180) / Math.PI,
+        //   CA: (VNeg.angleTo(CAuv) * 180) / Math.PI,
+        // };
+        // const plane = new THREE.Plane();
+        // plane.setFromCoplanarPoints(A, B, C);
+        // if (Math.abs(plane.normal.x) > 0.95) {
+        //   continue;
+        // }
+        // const OProj = new THREE.Vector3();
+        // const AxisProj = new THREE.Vector3();
+        // plane.projectPoint(new THREE.Vector3(0, 0, 0), OProj);
+        // plane.projectPoint(axisX, AxisProj);
+        // const axisVector = new THREE.Vector3().subVectors(AxisProj, OProj);
+        // const angOXToABC = {
+        //   AB: (axisVector.angleTo(AB) * 180) / Math.PI,
+        //   BC: (axisVector.angleTo(BC) * 180) / Math.PI,
+        //   CA: (axisVector.angleTo(CA) * 180) / Math.PI,
+        // };
+        // if (
+        //   Math.abs(angOXToABC.AB - angUPosToABC.AB) < lim &&
+        //   Math.abs(angOXToABC.BC - angUPosToABC.BC) < lim &&
+        //   Math.abs(angOXToABC.CA - angUPosToABC.CA) < lim
+        // ) {
+        //   dir = "UP";
+        // } else if (
+        //   Math.abs(angOXToABC.AB - angUNegToABC.AB) < lim &&
+        //   Math.abs(angOXToABC.BC - angUNegToABC.BC) < lim &&
+        //   Math.abs(angOXToABC.CA - angUNegToABC.CA) < lim
+        // ) {
+        //   dir = "UN";
+        // } else if (
+        //   Math.abs(angOXToABC.AB - angVPosToABC.AB) < lim &&
+        //   Math.abs(angOXToABC.BC - angVPosToABC.BC) < lim &&
+        //   Math.abs(angOXToABC.CA - angVPosToABC.CA) < lim
+        // ) {
+        //   dir = "VP";
+        // } else if (
+        //   Math.abs(angOXToABC.AB - angVNegToABC.AB) < lim &&
+        //   Math.abs(angOXToABC.BC - angVNegToABC.BC) < lim &&
+        //   Math.abs(angOXToABC.CA - angVNegToABC.CA) < lim
+        // ) {
+        //   dir = "VN";
+        // } else {
+        //   // console.log("out of range");
+        // }
+        // if (dir === "check dir") {
+        //   kx = 0;
+        // } else if (dir === "UP" || dir === "VP") {
+        //   kx = 1;
+        // } else {
+        //   kx = -1;
+        // }
+      }
+      if (scaleDir === "YY") {
+        // const OY = { x: 0, y: 10, z: 0 };
+        // const OUP = { x: 0, y: 10, z: 0 };
+        // const OUN = { x: 0, y: -10, z: 0 };
+        // const OVP = { x: 10, y: 0, z: 0 };
+        // const OVN = { x: -10, y: 0, z: 0 };
+
+        // const AV3 = new THREE.Vector3(A.x, A.y, A.z);
+        // const BV3 = new THREE.Vector3(B.x, B.y, B.z);
+        // const CV3 = new THREE.Vector3(C.x, C.y, C.z);
+
+        // const ABV3 = new THREE.Vector3(B.x - A.x, B.y - A.y, B.z - A.z);
+        // const AB = { x: B.x - A.x, y: B.y - A.y, z: B.z - A.z };
+        // const BC = { x: C.x - B.x, y: C.y - B.y, z: C.z - B.z };
+        // const CA = { x: A.x - C.x, y: A.y - C.y, z: A.z - C.z };
+
+        // const ABinXY = { x: B.v - A.v, y: B.u - A.u, z: 0 };
+        // const BCinXY = { x: C.v - B.v, y: C.u - B.u, z: 0 };
+        // const CAinXY = { x: A.v - C.v, y: A.u - C.u, z: 0 };
+
+        // const anglesUP = {
+        //   AB: getAngle(OUP, ABinXY),
+        //   BC: getAngle(OUP, BCinXY),
+        //   CA: getAngle(OUP, CAinXY),
+        // };
+
+        // const anglesUN = {
+        //   AB: getAngle(OUN, ABinXY),
+        //   BC: getAngle(OUN, BCinXY),
+        //   CA: getAngle(OUN, CAinXY),
+        // };
+
+        // const anglesVP = {
+        //   AB: getAngle(OVP, ABinXY),
+        //   BC: getAngle(OVP, BCinXY),
+        //   CA: getAngle(OVP, CAinXY),
+        // };
+
+        // const anglesVN = {
+        //   AB: getAngle(OVN, ABinXY),
+        //   BC: getAngle(OVN, BCinXY),
+        //   CA: getAngle(OVN, CAinXY),
+        // };
+
+        // let anglesOY = {};
+
+        // const plane = new THREE.Plane();
+        // plane.setFromCoplanarPoints(AV3, BV3, CV3);
+        // console.log(plane);
+
+        if (Math.abs(plane.normal.y) > 0.95) {
+          continue;
+        }
+
+        const Y0 = plane.projectPoint(new THREE.Vector3(0, 0, 0));
+        const Y1 = plane.projectPoint(new THREE.Vector3(0, 10, 0));
+        const Y0Y1 = { x: Y1.x - Y0.x, y: Y1.y - Y0.y, z: Y1.z - Y0.z };
+
+        anglesOY = {
+          OY_AB: getAngle(Y0Y1, AB),
+          OY_BC: getAngle(Y0Y1, BC),
+          OY_CA: getAngle(Y0Y1, CA),
+        };
+
+        if (
+          Math.abs(anglesOY.OY_AB - anglesUP.AB) < lim &&
+          Math.abs(anglesOY.OY_BC - anglesUP.BC) < lim &&
+          Math.abs(anglesOY.OY_CA - anglesUP.CA) < lim
+        ) {
+          dir = "UP";
+        } else if (
+          Math.abs(anglesOY.OY_AB - anglesUN.AB) < lim &&
+          Math.abs(anglesOY.OY_BC - anglesUN.BC) < lim &&
+          Math.abs(anglesOY.OY_CA - anglesUN.CA) < lim
+        ) {
+          dir = "UN";
+        } else if (
+          Math.abs(anglesOY.OY_AB - anglesVP.AB) < lim &&
+          Math.abs(anglesOY.OY_BC - anglesVP.BC) < lim &&
+          Math.abs(anglesOY.OY_CA - anglesVP.CA) < lim
+        ) {
+          dir = "VP";
+        } else if (
+          Math.abs(anglesOY.OY_AB - anglesVN.AB) < lim &&
+          Math.abs(anglesOY.OY_BC - anglesVN.BC) < lim &&
+          Math.abs(anglesOY.OY_CA - anglesVN.CA) < lim
+        ) {
+          dir = "VN";
+        } else {
+          console.log("out 1");
+
+          if (
+            (Math.abs(anglesOY.OY_AB - anglesUP.AB) < lim &&
+              Math.abs(anglesOY.OY_BC - anglesUP.BC) < lim) ||
+            (Math.abs(anglesOY.OY_BC - anglesUP.BC) < lim &&
+              Math.abs(anglesOY.OY_CA - anglesUP.CA) < lim) ||
+            (Math.abs(anglesOY.OY_AB - anglesUP.AB) < lim &&
+              Math.abs(anglesOY.OY_CA - anglesUP.CA) < lim)
+          ) {
+            dir = "UP";
+          } else if (
+            (Math.abs(anglesOY.OY_AB - anglesUN.AB) < lim &&
+              Math.abs(anglesOY.OY_BC - anglesUN.BC) < lim) ||
+            (Math.abs(anglesOY.OY_BC - anglesUN.BC) < lim &&
+              Math.abs(anglesOY.OY_CA - anglesUN.CA) < lim) ||
+            (Math.abs(anglesOY.OY_AB - anglesUN.AB) < lim &&
+              Math.abs(anglesOY.OY_CA - anglesUN.CA) < lim)
+          ) {
+            dir = "UN";
+          } else if (
+            (Math.abs(anglesOY.OY_AB - anglesVP.AB) < lim &&
+              Math.abs(anglesOY.OY_BC - anglesVP.BC) < lim) ||
+            (Math.abs(anglesOY.OY_BC - anglesVP.BC) < lim &&
+              Math.abs(anglesOY.OY_CA - anglesVP.CA) < lim) ||
+            (Math.abs(anglesOY.OY_AB - anglesVP.AB) < lim &&
+              Math.abs(anglesOY.OY_CA - anglesVP.CA) < lim)
+          ) {
+            dir = "VP";
+          } else if (
+            (Math.abs(anglesOY.OY_AB - anglesVN.AB) < lim &&
+              Math.abs(anglesOY.OY_BC - anglesVN.BC) < lim) ||
+            (Math.abs(anglesOY.OY_BC - anglesVN.BC) < lim &&
+              Math.abs(anglesOY.OY_CA - anglesVN.CA) < lim) ||
+            (Math.abs(anglesOY.OY_AB - anglesVN.AB) < lim &&
+              Math.abs(anglesOY.OY_CA - anglesVN.CA) < lim)
+          ) {
+            dir = "VN";
+          } else {
+            console.log("out of range");
+          }
+        }
+
+        if (dir === "check dir") {
+          ky = 0;
+        } else if (dir === "UP" || dir === "VP") {
+          ky = 1;
+        } else {
+          ky = -1;
+        }
+      } else if (scaleDir === "XX") {
+        // if (Math.abs(A.n.x) > 0.9) {
+        //   continue;
+        // }
+
+        const lim = 1;
+        const XY = { x: B.x - A.x, y: B.y - A.y, z: B.z - A.z };
+        const UV = { u: B.u - A.u, v: B.v - A.v };
+        // const UV = { x: B.u - A.u, y: B.v - A.v, z: 0 };
+        const angleX = getAngle(XY, { x: 10, y: 0, z: 0 });
+        const angleU = getAngle({ x: UV.u, y: UV.v, z: 0 }, { x: 10, y: 0, z: 0 });
+        const angleV = getAngle({ x: UV.u, y: UV.v, z: 0 }, { x: 0, y: -10, z: 0 });
+
+        // if (Math.abs(angleX - angleU) < lim) {
+        //   dir = "UP";
+        // } else if (Math.abs(angleX - angleV) < lim) {
+        //   dir = "VP";
+        // } else if (Math.abs(angleX - (180 - angleU)) < lim) {
+        //   dir = "UN";
+        // } else if (Math.abs(angleX - (180 - angleV)) < lim) {
+        //   dir = "VN";
+        // } else if (angleX < 45 && angleU < 45) {
+        //   dir = "UP";
+        // } else if (angleX < 45 && angleV < 45) {
+        //   dir = "VP";
+        // } else if (angleX < 90 && angleU < 45) {
+        //   dir = "VP";
+        // } else if (angleX < 90 && angleV < 45) {
+        //   dir = "UN";
+        // }
+
+        // console.log(angleX);
+        // console.log(angleU, angleV);
+
+        // ---------------end work------------------------------------------------------
+
+        if (A.n.y > 0.95) {
+          // if (
+          //   Math.abs(angleX - angleU) < lim &&
+          //   XY.z < 0 &&
+          //   XY.x > 0 &&
+          //   UV.u > 0 &&
+          //   UV.v < 0
+          // ) {
+          //   dir = "UP";
+          // } else if (
+          //   Math.abs(angleX - angleV) < lim &&
+          //   XY.z < 0 &&
+          //   XY.x > 0 &&
+          //   UV.u > 0 &&
+          //   UV.v > 0
+          // ) {
+          //   dir = "VP";
+          // } else if (
+          //   Math.abs(angleX - angleU) < lim &&
+          //   XY.z < 0 &&
+          //   XY.x < 0 &&
+          //   UV.u < 0 &&
+          //   UV.v < 0
+          // ) {
+          //   dir = "UP";
+          // } else if (
+          //   Math.abs(angleX - angleV) < lim &&
+          //   XY.z < 0 &&
+          //   XY.x < 0 &&
+          //   UV.u > 0 &&
+          //   UV.v < 0
+          // ) {
+          //   dir = "VP";
+          // } else if (
+          //   Math.abs(angleX - angleU) < lim &&
+          //   XY.z > 0 &&
+          //   XY.x < 0 &&
+          //   UV.u < 0 &&
+          //   UV.v > 0
+          // ) {
+          //   dir = "UP";
+          // } else if (
+          //   Math.abs(angleX - angleV) < lim &&
+          //   XY.z > 0 &&
+          //   XY.x < 0 &&
+          //   UV.u < 0 &&
+          //   UV.v < 0
+          // ) {
+          //   dir = "VP";
+          // } else if (
+          //   Math.abs(angleX - angleU) < lim &&
+          //   XY.z > 0 &&
+          //   XY.x > 0 &&
+          //   UV.u > 0 &&
+          //   UV.v > 0
+          // ) {
+          //   dir = "UP";
+          // } else if (
+          //   Math.abs(angleX - angleV) < lim &&
+          //   XY.z > 0 &&
+          //   XY.x > 0 &&
+          //   UV.u < 0 &&
+          //   UV.v > 0
+          // ) {
+          //   dir = "VP";
+          // }
+
+          if (XY.z < 0 && XY.x > 0) {
+            if (UV.u > 0 && UV.v < 0) {
+              dir = "UP";
+            } else if (UV.u < 0 && UV.v < 0) {
+              dir = "VN";
+            } else if (UV.u < 0 && UV.v < 0) {
+              dir = "UN";
+            } else if (UV.u > 0 && UV.v > 0) {
+              dir = "VP";
+            }
+          } else if (XY.z < 0 && XY.x < 0) {
+            if (UV.u > 0 && UV.v < 0) {
+              dir = "VP";
+            } else if (UV.u < 0 && UV.v < 0) {
+              dir = "UP";
+            } else if (UV.u < 0 && UV.v < 0) {
+              dir = "VN";
+            } else if (UV.u > 0 && UV.v > 0) {
+              dir = "UN";
+            }
+          } else if (XY.z > 0 && XY.x < 0) {
+            if (UV.u > 0 && UV.v < 0) {
+              dir = "UN";
+            } else if (UV.u < 0 && UV.v < 0) {
+              dir = "VP";
+            } else if (UV.u < 0 && UV.v < 0) {
+              dir = "UP";
+            } else if (UV.u > 0 && UV.v > 0) {
+              dir = "VN";
+            }
+          } else if (XY.z > 0 && XY.x > 0) {
+            if (UV.u > 0 && UV.v < 0) {
+              dir = "VN";
+            } else if (UV.u < 0 && UV.v < 0) {
+              dir = "UN";
+            } else if (UV.u < 0 && UV.v < 0) {
+              dir = "VP";
+            } else if (UV.u > 0 && UV.v > 0) {
+              dir = "UP";
+            }
+          }
+        } else if (A.n.y < -0.95 && false) {
+          if (XY.z > 0 && XY.x > 0) {
+            if (UV.u > 0 && UV.v < 0) {
+              dir = "UP";
+            } else if (UV.u < 0 && UV.v < 0) {
+              dir = "VN";
+            } else if (UV.u < 0 && UV.v < 0) {
+              dir = "UN";
+            } else if (UV.u > 0 && UV.v > 0) {
+              dir = "VP";
+            }
+          } else if (XY.z > 0 && XY.x < 0) {
+            if (UV.u > 0 && UV.v < 0) {
+              dir = "VP";
+            } else if (UV.u < 0 && UV.v < 0) {
+              dir = "UP";
+            } else if (UV.u < 0 && UV.v < 0) {
+              dir = "VN";
+            } else if (UV.u > 0 && UV.v > 0) {
+              dir = "UN";
+            }
+          } else if (XY.z < 0 && XY.x < 0) {
+            if (UV.u > 0 && UV.v < 0) {
+              dir = "UN";
+            } else if (UV.u < 0 && UV.v < 0) {
+              dir = "VP";
+            } else if (UV.u < 0 && UV.v < 0) {
+              dir = "UP";
+            } else if (UV.u > 0 && UV.v > 0) {
+              dir = "VN";
+            }
+          } else if (XY.z < 0 && XY.x > 0) {
+            if (UV.u > 0 && UV.v < 0) {
+              dir = "VN";
+            } else if (UV.u < 0 && UV.v < 0) {
+              dir = "UN";
+            } else if (UV.u < 0 && UV.v < 0) {
+              dir = "VP";
+            } else if (UV.u > 0 && UV.v > 0) {
+              dir = "UP";
+            }
+          }
+        }
+        // ------------------------------
+        // const arrX = [...arr].sort((a, b) => a.x - b.x);
+        // let a = arrX[0];
+        // let b = arrX[1];
+        // let c = arrX[2];
+
+        // if (a.u <= b.u && b.u <= c.u) {
+        //   dir = "UP";
+        // } else if (c.u <= b.u && b.u <= a.u) {
+        //   dir = "UN";
+        // } else if (a.v <= b.v && b.v <= c.v) {
+        //   dir = "VP";
+        // } else if (c.v <= b.v && b.v <= a.v) {
+        //   dir = "VN";
+        // } else {
+        //   console.log("loose");
+        //   console.log(arr);
+        // }
+        if (dir === "check") {
+          kx = 0;
+        } else if (dir === "UP" || dir === "VP") {
+          kx = 1;
+        } else {
+          kx = -1;
+        }
+        console.log(dir, kx);
+        // console.log(dxA, dxB, dxC);
+        // ---------------------------------------------------------------------
+
+        // if (A.n.y === 1) {
+        //   if (A.x !== B.x) {
+        //     if (A.x < B.x) {
+        // firstPoint = A;
+        // secondPoint = B;
+        //     } else {
+        //       firstPoint = B;
+        //       secondPoint = A;
+        //     }
+        //   } else {
+        // if (A.x < C.x) {
+        //   firstPoint = A;
+        //   secondPoint = C;
+        // } else {
+        //   firstPoint = C;
+        //   secondPoint = A;
+        // }
+        //   }
+        //   if (firstPoint.u < secondPoint.u) {
+        //     kx = 1;
+        //   } else {
+        //     kx = -1;
+        //   }
+        // } else {
+        // }
+        // ---------
+        // if (A.y === B.y && B.y === C.y && (A.x === B.x || B.x === C.x || A.x === C.x)) {
+        //   if (A.x !== B.x) {
+        //     if (A.x < B.x) {
+        //       firstPoint = A;
+        //       secondPoint = B;
+        //     } else {
+        //       firstPoint = B;
+        //       secondPoint = A;
+        //     }
+        //   } else {
+        //     if (A.x < C.x) {
+        //       firstPoint = A;
+        //       secondPoint = C;
+        //     } else {
+        //       firstPoint = C;
+        //       secondPoint = A;
+        //     }
+        //   }
+        // } else {
+        // }
+
+        // if (
+        //   false
+        //   // (Math.abs(A.n.y) === 1 || Math.abs(A.n.z) === 1) &&
+        //   // (A.x === B.x || B.x === C.x || A.x === C.x)
+        // ) {
+        //   console.log("yesss");
+        // if (A.x === B.x) {
+        //   if (A.u === B.u) {
+        //     if (C.x < A.x) {
+        //       if (C.u < A.u) {
+        //         dir = "UP";
+        //       } else {
+        //         dir = "UN";
+        //       }
+        //     } else {
+        //       if (C.u > A.u) {
+        //         dir = "UP";
+        //       } else {
+        //         dir = "UN";
+        //       }
+        //     }
+        //   } else if (A.v === B.v) {
+        //     if (C.x < A.x) {
+        //       if (C.v < A.v) {
+        //         dir = "VP";
+        //       } else {
+        //         dir = "VN";
+        //       }
+        //     } else {
+        //       if (C.v > A.v) {
+        //         dir = "VP";
+        //       } else {
+        //         dir = "VN";
+        //       }
+        //     }
+        //   }
+        // } else if (B.x === C.x) {
+        //   if (B.u === C.u) {
+        //     if (A.x < B.x) {
+        //       if (A.u < B.u) {
+        //         dir = "UP";
+        //       } else {
+        //         dir = "UN";
+        //       }
+        //     } else {
+        //       if (A.u > B.u) {
+        //         dir = "UP";
+        //       } else {
+        //         dir = "UN";
+        //       }
+        //     }
+        //   } else if (B.v === C.v) {
+        //     if (A.x < B.x) {
+        //       if (A.v < B.v) {
+        //         dir = "VP";
+        //       } else {
+        //         dir = "VN";
+        //       }
+        //     } else {
+        //       if (A.v > B.v) {
+        //         dir = "VP";
+        //       } else {
+        //         dir = "VN";
+        //       }
+        //     }
+        //   }
+        // } else if (A.x === C.x) {
+        //   if (A.u === C.u) {
+        //     if (B.x < A.x) {
+        //       if (B.u < A.u) {
+        //         dir = "UP";
+        //       } else {
+        //         dir = "UN";
+        //       }
+        //     } else {
+        //       if (B.u > A.u) {
+        //         dir = "UP";
+        //       } else {
+        //         dir = "UN";
+        //       }
+        //     }
+        //   } else if (A.v === C.v) {
+        //     if (B.x < A.x) {
+        //       if (B.v < A.v) {
+        //         dir = "VP";
+        //       } else {
+        //         dir = "VN";
+        //       }
+        //     } else {
+        //       if (B.v > A.v) {
+        //         dir = "VP";
+        //       } else {
+        //         dir = "VN";
+        //       }
+        //     }
+        //   }
+        // } else {
+        //     console.log("noooooooo");
+        //   }
+        //   // -------------
+
+        //   // if (A.u === B.u) {
+        //   //   dir = "UP";
+        //   // } else {
+        //   //   dir = "VP";
+        //   // }
+        // }
+        // else if (B.x === C.x) {
+        //   if (B.u === C.u) {
+        //     dir = "UP";
+        //   } else {
+        //     dir = "VP";
+        //   }
+        // } else if (A.x === C.x) {
+        //   if (A.u === C.u) {
+        //     dir = "UP";
+        //   } else {
+        //     dir = "VP";
+        //   }
+        // }
+        // else {
+        // console.log("sorting");
+        // const arrX = [...arr].sort((a, b) => a.x - b.x);
+        // const arrY = [...arr].sort((a, b) => a.y - b.y);
+        // const arrZ = [...arr].sort((a, b) => a.z - b.z);
+        // let aX = arrX[0];
+        // let bX = arrX[1];
+        // let cX = arrX[2];
+        // let aY = arrY[0];
+        // let bY = arrY[1];
+        // let cY = arrY[2];
+        // let aZ = arrZ[0];
+        // let bZ = arrZ[1];
+        // let cZ = arrZ[2];
+        //
+        // if (aX.x === bX.x) {
+        //   if (aX.u === bX.u) {
+        //     if (aX.u < cX.u) {
+        //       dir = "UP";
+        //     } else {
+        //       dir = "UN";
+        //     }
+        //   } else {
+        //     //av===bv
+        //     if (aX.v < cX.v) {
+        //       dir = "VP";
+        //     } else {
+        //       dir = "VN";
+        //     }
+        //   }
+        // } else if (bX.x === cX.x) {
+        //   if (bX.u === cX.u) {
+        //     if (aX.u < bX.u) {
+        //       dir = "UP";
+        //     } else {
+        //       dir = "UN";
+        //     }
+        //   } else {
+        //     if (aX.v < bX.v) {
+        //       dir = "VP";
+        //     } else {
+        //       dir = "VN";
+        //     }
+        //   }
+        // } else if (aY.y === bY.y) {
+        //   if (aY.u === bY.u) {
+        //     if (aY.u < cY.u) {
+        //       dir = "UP";
+        //     } else {
+        //       dir = "UN";
+        //     }
+        //   } else {
+        //     if (aY.v < cY.v) {
+        //       dir = "VP";
+        //     } else {
+        //       dir = "VN";
+        //     }
+        //   }
+        // } else if (bY.y === cY.y) {
+        //   if (bY.u === cY.u) {
+        //     if (aY.u < bY.u) {
+        //       dir = "UP";
+        //     } else {
+        //       dir = "UN";
+        //     }
+        //   } else {
+        //     if (aY.v < bY.v) {
+        //       dir = "VP";
+        //     } else {
+        //       dir = "VN";
+        //     }
+        //   }
+        // } else if (aZ.z === bZ.z) {
+        //   if (aZ.u === bZ.u) {
+        //     if (aZ.u < cZ.u) {
+        //       dir = "UP";
+        //     } else {
+        //       dir = "UN";
+        //     }
+        //   } else {
+        //     if (aZ.v < cZ.v) {
+        //       dir = "VP";
+        //     } else {
+        //       dir = "VN";
+        //     }
+        //   }
+        // } else if (bZ.z === cZ.z) {
+        //   if (bZ.u === cZ.u) {
+        //     if (aZ.u < bZ.u) {
+        //       dir = "UP";
+        //     } else {
+        //       dir = "UN";
+        //     }
+        //   } else {
+        //     if (bZ.v < aZ.v) {
+        //       dir = "VP";
+        //     } else {
+        //       dir = "VN";
+        //     }
+        //   }
+        // if (aX.u <= bX.u && bX.u <= cX.u) {
+        //   dir = "UP";
+        // } else if (cX.u <= bX.u && bX.u <= aX.u) {
+        //   dir = "UN";
+        // } else if (aX.v <= bX.v && bX.v <= cX.v) {
+        //   dir = "VP";
+        // } else if (cX.v <= bX.v && bX.v <= aX.v) {
+        //   dir = "VN";
+        //   // } else if (aX.u <= bX.u && bX.u <= cX.u) {
+        //   //   dir = "UP";
+        //   // } else if (cX.u <= bX.u && bX.u <= aX.u) {
+        //   //   dir = "UN";
+        //   // } else if (bX.u <= cX.u && cX.u <= aX.u) {
+        //   //   dir = "UN";
+        //   // } else if (cX.u <= aX.u && aX.u <= bX.u) {
+        //   //   dir = "VP";
+        //   // } else if (aX.u <= cX.u && cX.u <= bX.u) {
+        //   //   dir = "UP";
+        //   // } else if (bX.u <= aX.u && aX.u <= cX.u) {
+        //   //   dir = "VN";
+        //   // if (arr[0].u <= arr[1].u && arr[1].u <= arr[2].u) {
+        //   //   dir = "U";
+        //   // } else if (arr[0].u >= arr[1].u && arr[1].u >= arr[2].u) {
+        //   //   dir = "U";
+        //   // } else if (arr[0].v <= arr[1].v && arr[1].v <= arr[2].v) {
+        //   //   dir = "V";
+        //   // } else if (arr[0].v >= arr[1].v && arr[1].v >= arr[2].v) {
+        //   //   dir = "V";
+        // } else {
+        //   console.log("loose");
+        //   console.log(arr);
+        // }
+        // }
+
+        // if (A.x !== B.x) {
+        //   if (A.x < B.x) {
+        //     firstPoint = A;
+        //     secondPoint = B;
+        //   } else {
+        //     firstPoint = B;
+        //     secondPoint = A;
+        //   }
+        // } else {
+        //   if (A.x < C.x) {
+        //     firstPoint = A;
+        //     secondPoint = C;
+        //   } else {
+        //     firstPoint = C;
+        //     secondPoint = A;
+        //   }
+        // }
+
+        // if (dir === "UP" || dir === "VP") {
+        //   kx = 1;
+        // } else {
+        //   kx = -1;
+        // }
+
+        // // if (dir === "UP" || dir === "UN" || dir === "U") {
+        // //   if (firstPoint.u < secondPoint.u) {
+        // //     kx = 1;
+        // //   } else {
+        // //     kx = -1;
+        // //   }
+        // // } else {
+        // //   if (firstPoint.v < secondPoint.v) {
+        // //     kx = 1;
+        // //   } else {
+        // //     kx = -1;
+        // //   }
+        // // }
+        // console.log(dir, kx);
+        // console.log(dxA, dxB, dxC);
+      } else if (scaleDir === "YY") {
+        // if (Math.abs(A.n.y) > 0.9) {
+        //   continue;
+        // }
+
+        // // ---------------------------------------------------------------------
+        // const arrY = [...arr].sort((a, b) => a.y - b.y);
+        // let a = arrY[0];
+        // let b = arrY[1];
+        // let c = arrY[2];
+
+        // // if (a.y === b.y) {
+        // //   if (a.u === b.u) {
+        // //     if (c.u > a.u) {
+        // //       dir = "UP";
+        // //     } else {
+        // //       dir = "UN";
+        // //     }
+        // //   } else {
+        // //     if (c.v > a.v) {
+        // //       dir = "VP";
+        // //     } else {
+        // //       dir = "VN";
+        // //     }
+        // //   }
+        // // } else if (b.y === c.y) {
+        // //   if (b.u === c.u) {
+        // //     if (a.u < b.u) {
+        // //       dir = "UP";
+        // //     } else {
+        // //       dir = "UN";
+        // //     }
+        // //   } else {
+        // //     if (a.v < b.v) {
+        // //       dir = "VP";
+        // //     } else {
+        // //       dir = "VN";
+        // //     }
+        // //   }
+        // // } else
+        // if (a.u < b.u && b.u < c.u) {
+        //   dir = "UP";
+        // } else if (c.u < b.u && b.u < a.u) {
+        //   dir = "UN";
+        // } else if (a.v < b.v && b.v < c.v) {
+        //   dir = "VP";
+        // } else if (c.v < b.v && b.v < a.v) {
+        //   dir = "VN";
+        // } else {
+        //   console.log("loose");
+        //   console.log(arr);
+        // }
+
+        // if (dir === "UP" || dir === "VP") {
+        //   ky = 1;
+        // } else {
+        //   ky = -1;
+        // }
+
+        // -----new
+        const lim = 0.00001;
+        const vectorABXY = { x: B.x - A.x, y: B.y - A.y, z: B.z - A.z };
+        const vectorABUV = { x: B.u - A.u, y: B.v - A.v, z: 0 };
+        const angleY = getAngle(vectorABXY, { x: 0, y: 10, z: 0 });
+        const angleU = getAngle(vectorABUV, { x: 10, y: 0, z: 0 });
+        const angleV = getAngle(vectorABUV, { x: 0, y: -10, z: 0 });
+
+        // if (angleY === 0) {
+        //   if (angleU === 0 && angleV === 90) {
+        //     dir = "UP";
+        //   } else if (angleU === 90 && angleV === 0) {
+        //     dir = "VP";
+        //   } else if (angleU === 180 && angleV === 90) {
+        //     dir = "UN";
+        //   } else if (angleU === 90 && angleV === 180) {
+        //     dir = "VN";
+        //   }
+        // } else if (angleY === 90) {
+        //   if (Math.abs(A.n.x) > 0.9) {
+        //     if (angleU === 0 && angleV === 90) {
+        //       dir = "VP";
+        //     } else if (angleU === 90 && angleV === 0) {
+        //       dir = "UN";
+        //     } else if (angleU === 180 && angleV === 90) {
+        //       dir = "VN";
+        //     } else if (angleU === 90 && angleV === 180) {
+        //       dir = "UP";
+        //     }
+        //   } else if (Math.abs(A.n.z) > 0.9) {
+        //     if (angleU === 0 && angleV === 90) {
+        //       dir = "VP";
+        //     } else if (angleU === 90 && angleV === 0) {
+        //       dir = "UN";
+        //     } else if (angleU === 180 && angleV === 90) {
+        //       dir = "VN";
+        //     } else if (angleU === 90 && angleV === 180) {
+        //       dir = "UP";
+        //     }
+        //   }
+        // } else if (angleY === 180) {
+        //   if (angleU === 0 && angleV === 90) {
+        //     dir = "UN";
+        //   } else if (angleU === 90 && angleV === 0) {
+        //     dir = "VN";
+        //   } else if (angleU === 180 && angleV === 90) {
+        //     dir = "UP";
+        //   } else if (angleU === 90 && angleV === 180) {
+        //     dir = "VP";
+        //   }
+        // } else
+
+        // work
+        if (Math.abs(angleY - angleU) < lim) {
+          dir = "UP";
+        } else if (Math.abs(angleY - angleV) < lim) {
+          dir = "VP";
+        } else if (Math.abs(angleY - (180 - angleU)) < lim) {
+          dir = "UN";
+        } else if (Math.abs(angleY - (180 - angleV)) < lim) {
+          dir = "VN";
+        } else {
+          // console.log("nooooooooo");
+        }
+        // end work
+
+        console.log("-------------------");
+        console.log(dir);
+
+        if (dir === "UP" || dir === "VP") {
+          ky = 1;
+        } else {
+          ky = -1;
+        }
+        console.log(angleY);
+        console.log(angleU, angleV);
+      } else if (scaleDir === "ZZ") {
+        // if (Math.abs(A.n.z) > 0.9) {
+        //   continue;
+        // }
+
+        const lim = 0.00001;
+        const vectorABXY = { x: B.x - A.x, y: B.y - A.y, z: B.z - A.z };
+        const vectorABUV = { x: B.u - A.u, y: B.v - A.v, z: 0 };
+        const angleZ = getAngle(vectorABXY, { x: 0, y: 0, z: 10 });
+        const angleU = getAngle(vectorABUV, { x: 10, y: 0, z: 0 });
+        const angleV = getAngle(vectorABUV, { x: 0, y: -10, z: 0 });
+
+        if (Math.abs(angleZ - angleU) < lim) {
+          dir = "UP";
+        } else if (Math.abs(angleZ - angleV) < lim) {
+          dir = "VP";
+        } else if (Math.abs(angleZ - (180 - angleU)) < lim) {
+          dir = "UN";
+        } else if (Math.abs(angleZ - (180 - angleV)) < lim) {
+          dir = "VN";
+        } else {
+          // console.log("nooooooooo");
+        }
+
+        // ---------------------------------------------------------------------
+        // const arrZ = [...arr].sort((a, b) => a.z - b.z);
+        // let a = arrZ[0];
+        // let b = arrZ[1];
+        // let c = arrZ[2];
+
+        // if (a.u <= b.u && b.u <= c.u) {
+        //   dir = "UP";
+        // } else if (c.u <= b.u && b.u <= a.u) {
+        //   dir = "UN";
+        // } else if (a.v <= b.v && b.v <= c.v) {
+        //   dir = "VP";
+        // } else if (c.v <= b.v && b.v <= a.v) {
+        //   dir = "VN";
+        // } else {
+        //   console.log("loose");
+        //   console.log(arr);
+        // }
+
+        if (dir === "UP" || dir === "VP") {
+          kz = 1;
+        } else {
+          kz = -1;
+        }
+}
+      
 // ---------------------------------
-// function updateFrameGeometryWorkY() {
-//   let geo = initParams.geometry.frame.clone();
-//   let uv = geo.attributes.uv.array;
-//   let normal = geo.attributes.normal.array;
-//   let pos = geo.attributes.position.array;
-//   // geo.scale(sc, 1, 1);
-//   // geo.translate(0, -85, 0);
 
-//   let scaleX = params.width / initParams.outerWidth;
-//   let deltaX = params.width - initParams.outerWidth;
+// const A = {
+      //   x: (pos[indA * 3] * scale.x) / addScale.x,
+      //   y: (pos[indA * 3 + 1] * scale.y) / addScale.y,
+      //   z: (pos[indA * 3 + 2] * scale.z) / addScale.z,
+      //   u: uvInit[indA * 2],
+      //   v: uvInit[indA * 2 + 1],
+      //   n: { x: normal[indA * 3], y: normal[indA * 3 + 1], z: normal[indA * 3 + 2] },
+      // };
 
-//   let scaleY = params.height / initParams.outerHeight;
-//   let deltaY = params.height - initParams.outerHeight;
-//   console.log(deltaY);
+      // const B = {
+      //   x: (pos[indB * 3] * scale.x) / addScale.x,
+      //   y: (pos[indB * 3 + 1] * scale.y) / addScale.y,
+      //   z: (pos[indB * 3 + 2] * scale.z) / addScale.z,
+      //   u: uvInit[indB * 2],
+      //   v: uvInit[indB * 2 + 1],
+      //   n: { x: normal[indB * 3], y: normal[indB * 3 + 1], z: normal[indB * 3 + 2] },
+      // };
 
-//   let uCoords = uv.filter((el, i) => i % 2 === 0);
-//   let vCoords = uv.filter((el, i) => i % 2 === 1);
+      // const C = {
+      //   x: (pos[indC * 3] * scale.x) / addScale.x,
+      //   y: (pos[indC * 3 + 1] * scale.y) / addScale.y,
+      //   z: (pos[indC * 3 + 2] * scale.z) / addScale.z,
+      //   u: uvInit[indC * 2],
+      //   v: uvInit[indC * 2 + 1],
+      //   n: { x: normal[indC * 3], y: normal[indC * 3 + 1], z: normal[indC * 3 + 2] },
+      // };
 
-//   let uMax = Math.max(...uCoords);
-//   let uMin = Math.min(...uCoords);
-//   let vMax = Math.max(...vCoords);
-//   let vMin = Math.min(...vCoords);
+      // ----------------------------------------
 
-//   // let scaleUX = (uMax - uMin) / initParams.outerWidth;
-//   // let deltaUX = deltaX * scaleUX;
+      // if (dir === "UP" || dir === "UN") {
+      //   uv.set([p.A.u * addSc * kk * kU], indA * 2);
+      //   uv.set([p.B.u * addSc * kk * kU], indB * 2);
+      //   uv.set([p.C.u * addSc * kk * kU], indC * 2);
+      // } else if (dir === "VP" || dir === "VN") {
+      //   uv.set([p.A.v * addSc * kk * kV], indA * 2 + 1);
+      //   uv.set([p.B.v * addSc * kk * kV], indB * 2 + 1);
+      //   uv.set([p.C.v * addSc * kk * kV], indC * 2 + 1);
+      // }
 
-//   let scaleVY = (vMax - vMin) / initParams.outerHeight;
-//   let deltaVY = deltaY * scaleVY;
+      // if (dir === "UP" || dir === "UN") {
+      //   uv.set(
+      //     [
+      //       p.A.u +
+      //         kx.val * dxA * ratioUV +
+      //         ky.val * dyA * ratioUV +
+      //         kz.val * dzA * ratioUV,
+      //     ],
+      //     indA * 2
+      //   );
 
-//   for (let i = 0; i < pos.length - 3; i += 3) {
-//     if (
-//       isPointInPolygon({ x: pos[i], y: pos[i + 1] }, initParams.leftPolygon) ||
-//       isPointInPolygon({ x: pos[i], y: pos[i + 1] }, initParams.rightPolygon)
-//     ) {
-//       // розтягуємо по ОY
-//       pos.set([pos[i], pos[i + 1] * scaleY, pos[i + 2]], i);
-//       uv.set(
-//         [uv[(i / 3) * 2], uv[(i / 3) * 2 + 1] * scaleY - deltaVY / 6.6],
-//         (i / 3) * 2
-//       );
-//     } else if (pos[i + 1] > initParams.M.y - 5) {
-//       // зміщуємо up
-//       pos.set([pos[i], pos[i + 1] + deltaY / 2, pos[i + 2]], i);
-//       uv.set([uv[(i / 3) * 2], uv[(i / 3) * 2 + 1] - deltaVY / 2], (i / 3) * 2);
-//     } else {
-//       // зміщуємо dowwn
-//       pos.set([pos[i], pos[i + 1] - deltaY / 2, pos[i + 2]], i);
-//       uv.set([uv[(i / 3) * 2], uv[(i / 3) * 2 + 1] + deltaVY / 2], (i / 3) * 2);
-//     }
-//   }
+      //   uv.set(
+      //     [
+      //       p.B.u +
+      //         kx.val * dxB * ratioUV +
+      //         ky.val * dyB * ratioUV +
+      //         kz.val * dzB * ratioUV,
+      //     ],
+      //     indB * 2
+      //   );
 
-//   frameMesh.geometry = geo;
-// }
-// -----------------------------
-// const x1 = -27.557 + dx;
-// const y1 = 146.521;
-// const z1 = -1.242;
+      //   uv.set(
+      //     [
+      //       p.C.u +
+      //         kx.val * dxC * ratioUV +
+      //         ky.val * dyC * ratioUV +
+      //         kz.val * dzC * ratioUV,
+      //     ],
+      //     indC * 2
+      //   );
+      // } else if (dir === "VP" || dir === "VN") {
+      //   uv.set(
+      //     [
+      //       p.A.v +
+      //         kx.val * dxA * ratioUV +
+      //         ky.val * dyA * ratioUV +
+      //         kz.val * dzA * ratioUV,
+      //     ],
+      //     indA * 2 + 1
+      //   );
 
-// const x11 = -27.827 + dx;
-// const y11 = 147.103;
-// const z11 = -0.27;
+      //   uv.set(
+      //     [
+      //       p.B.v +
+      //         kx.val * dxB * ratioUV +
+      //         ky.val * dyB * ratioUV +
+      //         kz.val * dzB * ratioUV,
+      //     ],
+      //     indB * 2 + 1
+      //   );
 
-// const x2 = 26.885 + dx;
-// const y2 = 147.065;
-// const z2 = 0.059;
+      //   uv.set(
+      //     [
+      //       p.C.v +
+      //         kx.val * dxC * ratioUV +
+      //         ky.val * dyC * ratioUV +
+      //         kz.val * dzC * ratioUV,
+      //     ],
+      //     indC * 2 + 1
+      //   );
+      // }
 
-// const x22 = 27.798 + dx;
-// const y22 = 147.784;
-// const z22 = 1.266;
+        // let kk = 0;
+      // let znakDxA = dxA > 0 ? 1 : dxA < 0 ? -1 : 0;
+      // let znakxxB = dxB > 0 ? 1 : dxB < 0 ? -1 : 0;
+      // let znakDxC = dxC > 0 ? 1 : dxC < 0 ? -1 : 0;
 
-// const x3 = 26.794 + dx;
-// const y3 = 23.022;
-// const z3 = 0.096;
+      // let znakDyA = dyA > 0 ? 1 : dyA < 0 ? -1 : 0;
+      // let znakDyB = dyB > 0 ? 1 : dyB < 0 ? -1 : 0;
+      // let znakDyC = dyC > 0 ? 1 : dyC < 0 ? -1 : 0;
 
-// const x4 = -27.233 + dx;
-// const y4 = 23.409;
-// const z4 = -0.943;
+      // let znakDzA = dzA > 0 ? 1 : dzA < 0 ? -1 : 0;
+      // let znakDzB = dzB > 0 ? 1 : dzB < 0 ? -1 : 0;
+      // let znakDzC = dzC > 0 ? 1 : dzC < 0 ? -1 : 0;
 
-// const abs = 0.2;
+      // let kU = 0;
+      // let kV = 0;
 
-// // for (let i = 0; i < pos.length - 3; i += 3) {
-// for (let i = 0; i < 0 - 3; i += 3) {
-// if (
-//   (Math.abs(initParams.geometry.frame.attributes.position.array[i] - x1) < abs &&
-//     Math.abs(initParams.geometry.frame.attributes.position.array[i + 1] - y1) < abs &&
-//     Math.abs(initParams.geometry.frame.attributes.position.array[i + 2] - z1) < abs) ||
-//   (Math.abs(initParams.geometry.frame.attributes.position.array[i] - x11) < abs &&
-//     Math.abs(initParams.geometry.frame.attributes.position.array[i + 1] - y11) < abs &&
-//     Math.abs(initParams.geometry.frame.attributes.position.array[i + 2] - z11) < abs)
-// ) {
-//   console.log(
-//     initParams.geometry.frame.attributes.position.array[i] - dx,
-//     initParams.geometry.frame.attributes.position.array[i + 1],
-//     initParams.geometry.frame.attributes.position.array[i + 2]
-//   );
-//   pos.set([x1, pos[i + 1] / scaleY + deltaY], i);
-//   let dy = pos[i + 1] - initParams.geometry.frame.attributes.position.array[i + 1];
+      // if (dxA > 0) {
+      //   kk = 1;
+      // } else if (dxA < 0) {
+      //   kk = -1;
+      // } else if (dyA > 0) {
+      //   kk = 1;
+      // } else if (dyA < 0) {
+      //   kk = -1;
+      // } else if (dzA > 0) {
+      //   kk = 1;
+      // } else if (dzA < 0) {
+      //   kk = -1;
+      // }
 
-//   uv.set(
-//     [
-//       uv[(i / 3) * 2],
-//       initParams.geometry.frame.attributes.uv.array[(i / 3) * 2 + 1] + dy * scaleVY,
-//     ],
-//     (i / 3) * 2
-//   );
-// } else if (
-//     (Math.abs(initParams.geometry.frame.attributes.position.array[i] - x2) < abs &&
-//       Math.abs(initParams.geometry.frame.attributes.position.array[i + 1] - y2) < abs &&
-//       Math.abs(initParams.geometry.frame.attributes.position.array[i + 2] - z2) < abs) ||
-//     (Math.abs(initParams.geometry.frame.attributes.position.array[i] - x22) < abs &&
-//       Math.abs(initParams.geometry.frame.attributes.position.array[i + 1] - y22) < abs &&
-//       Math.abs(initParams.geometry.frame.attributes.position.array[i + 2] - z22) < abs)
-//   ) {
-//     console.log(
-//       initParams.geometry.frame.attributes.position.array[i] - dx,
-//       initParams.geometry.frame.attributes.position.array[i + 1],
-//       initParams.geometry.frame.attributes.position.array[i + 2]
-//     );
-//     pos.set([pos[i + 1] / scaleY + deltaY], i + 1);
-//   } else if (
-//     Math.abs(initParams.geometry.frame.attributes.position.array[i] - x3) < abs &&
-//     Math.abs(initParams.geometry.frame.attributes.position.array[i + 1] - y3) < abs &&
-//     Math.abs(initParams.geometry.frame.attributes.position.array[i + 2] - z3) < abs
-//   ) {
-//     console.log(
-//       initParams.geometry.frame.attributes.position.array[i] - dx,
-//       initParams.geometry.frame.attributes.position.array[i + 1],
-//       initParams.geometry.frame.attributes.position.array[i + 2]
-//     );
-//     // pos.set([pos[i] + deltaX / 7, y3], i);
-//   } else if (
-//     Math.abs(initParams.geometry.frame.attributes.position.array[i] - x4) < abs &&
-//     Math.abs(initParams.geometry.frame.attributes.position.array[i + 1] - y4) < abs &&
-//     Math.abs(initParams.geometry.frame.attributes.position.array[i + 2] - z4) < abs
-//   ) {
-//     console.log(
-//       initParams.geometry.frame.attributes.position.array[i] - dx,
-//       initParams.geometry.frame.attributes.position.array[i + 1],
-//       initParams.geometry.frame.attributes.position.array[i + 2]
-//     );
-//     // pos.set([x4, y4], i);
-//   }
-// }
-// ----------------------------------
-// console.log("scaleX");
-// console.log(scaleX);
-// console.log("deltaX");
-// console.log(deltaX);
-// console.log("scaleY");
-// console.log(scaleY);
-// console.log("deltaY");
-// console.log(deltaY);
-// -------------------------------------------
-function updateFrameGeometryWorkX() {
-  let geo = initParams.geometry.frame.clone();
-  let uv = geo.attributes.uv.array;
-  let normal = geo.attributes.normal.array;
-  let pos = geo.attributes.position.array;
-  // geo.scale(sc, 1, 1);
-
-  let scaleX = params.width / initParams.outerWidth;
-  let deltaX = params.width - initParams.outerWidth;
-
-  let scaleY = params.height / initParams.outerHeight;
-  let = params.height - initParams.outerHeight;
-
-  let uCoords = uv.filter((el, i) => i % 2 === 0);
-  let vCoords = uv.filter((el, i) => i % 2 === 1);
-
-  let uMax = Math.max(...uCoords);
-  let uMin = Math.min(...uCoords);
-  let vMax = Math.max(...vCoords);
-  let vMin = Math.min(...vCoords);
-
-  let ratioUX = (uMax - uMin) / initParams.outerWidth;
-  // let deltaUX = deltaX * ratioUX;
-
-  // let scaleVX = (vMax - vMin) / initParams.outerHeight;
-  // let deltaVX = deltaY * scaleVX;
-
-  for (let i = 0; i < pos.length - 3; i += 3) {
-    if (isPointInPolygon({ x: pos[i], y: pos[i + 1] }, initParams.topPolygon)) {
-      // розтягуємо по ОХ
-      pos.set([pos[i] * scaleX, pos[i + 1], pos[i + 2]], i);
-      let dx = pos[i] - initParams.geometry.frame.attributes.position.array[i];
-      // let dy = pos[i + 1] - initParams.geometry.frame.attributes.position.array[i + 1];
-      uv.set([uv[(i / 3) * 2] - dx * ratioUX, uv[(i / 3) * 2 + 1]], (i / 3) * 2);
-    } else if (isPointInPolygon({ x: pos[i], y: pos[i + 1] }, initParams.bottomPolygon)) {
-      // розтягуємо по ОХ
-      pos.set([pos[i] * scaleX, pos[i + 1], pos[i + 2]], i);
-      let dx = pos[i] - initParams.geometry.frame.attributes.position.array[i];
-      uv.set([uv[(i / 3) * 2] - dx * ratioUX, uv[(i / 3) * 2 + 1]], (i / 3) * 2);
-    } else if (isPointInPolygon({ x: pos[i], y: pos[i + 1] }, initParams.leftPolygon)) {
-      console.log("left");
-      // // розтягуємо по ОY
-      // pos.set([pos[i], pos[i + 1] * scaleY, pos[i + 2]], i);
-      // let dy = pos[i + 1] - initParams.geometry.frame.attributes.position.array[i + 1];
-      // uv.set([uv[(i / 3) * 2], uv[(i / 3) * 2 + 1] + dy * ratioVY], (i / 3) * 2);
-    } else if (isPointInPolygon({ x: pos[i], y: pos[i + 1] }, initParams.rightPolygon)) {
-      // зміщуємо вправо
-      pos.set([pos[i] + deltaX, pos[i + 1], pos[i + 2]], i);
-      let dx = pos[i] - initParams.geometry.frame.attributes.position.array[i];
-      // let dy = pos[i + 1] - initParams.geometry.frame.attributes.position.array[i + 1];
-      uv.set([uv[(i / 3) * 2] - dx * ratioUX, uv[(i / 3) * 2 + 1]], (i / 3) * 2);
-    } else {
-      console.log("noooooooooo");
-    }
-  }
-
-  frameMesh.geometry = geo;
-}
-
-function updateFrameGeometryWorkY() {
-  let geo = initParams.geometry.frame.clone();
-  let uv = geo.attributes.uv.array;
-  let normal = geo.attributes.normal.array;
-  let pos = geo.attributes.position.array;
-
-  let scaleY = params.height / initParams.outerHeight;
-  let deltaY = params.height - initParams.outerHeight;
-  console.log(deltaY);
-
-  let uCoords = uv.filter((el, i) => i % 2 === 0);
-  let vCoords = uv.filter((el, i) => i % 2 === 1);
-
-  let vMax = Math.max(...vCoords);
-  let vMin = Math.min(...vCoords);
-
-  let ratioVY = (vMax - vMin) / initParams.outerHeight;
-  let deltaVY = deltaY * ratioVY;
-
-  for (let i = 0; i < pos.length - 3; i += 3) {
-    if (
-      isPointInPolygon({ x: pos[i], y: pos[i + 1] }, initParams.leftPolygon) ||
-      isPointInPolygon({ x: pos[i], y: pos[i + 1] }, initParams.rightPolygon)
-    ) {
-      // розтягуємо по ОY
-      pos.set([pos[i], pos[i + 1] * scaleY, pos[i + 2]], i);
-      let dy = pos[i + 1] - initParams.geometry.frame.attributes.position.array[i + 1];
-      uv.set([uv[(i / 3) * 2], uv[(i / 3) * 2 + 1] + dy * ratioVY], (i / 3) * 2);
-    } else if (pos[i + 1] > initParams.M.y - 5) {
-      // зміщуємо up
-      pos.set([pos[i], pos[i + 1] + deltaY, pos[i + 2]], i);
-      let dy = pos[i + 1] - initParams.geometry.frame.attributes.position.array[i + 1];
-      uv.set([uv[(i / 3) * 2], uv[(i / 3) * 2 + 1] + dy * ratioVY], (i / 3) * 2);
-    } else {
-      // зміщуємо dowwn
-      // pos.set([pos[i], pos[i + 1] - deltaY / 2, pos[i + 2]], i);
-      // uv.set([uv[(i / 3) * 2], uv[(i / 3) * 2 + 1] + deltaVY / 2], (i / 3) * 2);
-    }
-  }
-
-  frameMesh.geometry = geo;
-}
-
-function updateFrameGeometryWorkYf() {
-  let geo = initParams.geometry.frame.clone();
-  let uv = geo.attributes.uv.array;
-  let normal = geo.attributes.normal.array;
-  let pos = geo.attributes.position.array;
-
-  let scaleX = params.width / initParams.outerWidth;
-  let deltaX = params.width - initParams.outerWidth;
-
-  let scaleY = params.height / initParams.outerHeight;
-  let deltaY = params.height - initParams.outerHeight;
-  console.log(deltaY);
-
-  let uCoords = uv.filter((el, i) => i % 2 === 0);
-  let vCoords = uv.filter((el, i) => i % 2 === 1);
-
-  let uMax = Math.max(...uCoords);
-  let uMin = Math.min(...uCoords);
-  let vMax = Math.max(...vCoords);
-  let vMin = Math.min(...vCoords);
-
-  let ratioUX = (uMax - uMin) / initParams.outerWidth;
-  let deltaUX = deltaX * ratioUX;
-
-  let ratioVY = (vMax - vMin) / initParams.outerHeight;
-  let deltaVY = deltaY * ratioVY;
-
-  for (let i = 0; i < pos.length - 3; i += 3) {
-    if (
-      isPointInPolygon({ x: pos[i], y: pos[i + 1] }, initParams.topPolygon)
-      // isPointInPolygon({ x: pos[i], y: pos[i + 1] }, initParams.rightPolygon)
-    ) {
-      // зміщуємо up
-      pos.set([pos[i], pos[i + 1] + deltaY / 2, pos[i + 2]], i);
-      uv.set([uv[(i / 3) * 2], uv[(i / 3) * 2 + 1] - deltaVY / 2], (i / 3) * 2);
-    } else if (isPointInPolygon({ x: pos[i], y: pos[i + 1] }, initParams.bottomPolygon)) {
-      // зміщуємо dowwn
-      pos.set([pos[i], pos[i + 1] - deltaY / 2, pos[i + 2]], i);
-      uv.set([uv[(i / 3) * 2], uv[(i / 3) * 2 + 1] + deltaVY / 2], (i / 3) * 2);
-      // } else if (pos[i ] > initParams.M.x - 5) {
-    } else {
-      // розтягуємо по ОY
-      pos.set([pos[i], pos[i + 1] * scaleY, pos[i + 2]], i);
-      uv.set(
-        [uv[(i / 3) * 2], uv[(i / 3) * 2 + 1] * scaleY - deltaVY / 6.6],
-        (i / 3) * 2
-      );
-    }
-  }
-
-  frameMesh.geometry = geo;
-}
-// ----------------------------------------
-function updateFrameGeometry() {
-  let geo = initParams.geometry.frame.clone();
-  // geo.translate(dx, dy, 0);
-
-  let uv = geo.attributes.uv.array;
-  let normal = geo.attributes.normal.array;
-  let pos = geo.attributes.position.array;
-
-  // geo.scale(sc, 1, 1);
-
-  let scaleX = params.width / initParams.outerWidth;
-  let deltaX = params.width - initParams.outerWidth;
-
-  let scaleY = params.height / initParams.outerHeight;
-  let deltaY = params.height - initParams.outerHeight;
-
-  let uCoords = uv.filter((el, i) => i % 2 === 0);
-  let vCoords = uv.filter((el, i) => i % 2 === 1);
-
-  let uMax = Math.max(...uCoords);
-  let uMin = Math.min(...uCoords);
-  let vMax = Math.max(...vCoords);
-  let vMin = Math.min(...vCoords);
-
-  let ratioUX = (uMax - uMin) / initParams.outerWidth;
-  // let deltaUX = deltaX * ratioUX;
-
-  let ratioVY = (vMax - vMin) / initParams.outerHeight;
-  // let deltaVY = deltaY * ratioVY;
-
-  for (let i = 0; i < pos.length - 3; i += 3) {
-    if (isPointAtFixedPoints(initParams.fixedPoints.bottomLeft, pointFromIndex(i))) {
-      // do nothing
-    } else if (
-      isPointAtFixedPoints(initParams.fixedPoints.topLeft, {
-        x: pos[i],
-        y: pos[i + 1],
-        z: pos[i + 2],
-      })
-    ) {
-      //зміщуєм вверх
-      pos.set([pos[i], pos[i + 1] + deltaY, pos[i + 2]], i);
-      let dy = pos[i + 1] - initParams.geometry.frame.attributes.position.array[i + 1];
-      uv.set([uv[(i / 3) * 2], uv[(i / 3) * 2 + 1] + dy * ratioVY], (i / 3) * 2);
-    } else if (
-      isPointAtFixedPoints(initParams.fixedPoints.topRight, {
-        x: pos[i],
-        y: pos[i + 1],
-        z: pos[i + 2],
-      })
-    ) {
-      //зміщуєм вверх і вправо
-      pos.set([pos[i] + deltaX, pos[i + 1] + deltaY, pos[i + 2]], i);
-      let dx = pos[i] - initParams.geometry.frame.attributes.position.array[i];
-      let dy = pos[i + 1] - initParams.geometry.frame.attributes.position.array[i + 1];
-      uv.set(
-        [uv[(i / 3) * 2] - dx * ratioUX, uv[(i / 3) * 2 + 1] + dy * ratioVY],
-        (i / 3) * 2
-      );
-    } else if (
-      isPointAtFixedPoints(initParams.fixedPoints.bottomRight, {
-        x: pos[i],
-        y: pos[i + 1],
-        z: pos[i + 2],
-      })
-    ) {
-      //зміщуєм вправо
-      pos.set([pos[i] + deltaX, pos[i + 1], pos[i + 2]], i);
-      let dx = pos[i] - initParams.geometry.frame.attributes.position.array[i];
-      // let dy = pos[i + 1] - initParams.geometry.frame.attributes.position.array[i + 1];
-      uv.set([uv[(i / 3) * 2] - dx * ratioUX, uv[(i / 3) * 2 + 1]], (i / 3) * 2);
-    } else if (isPointInPolygon({ x: pos[i], y: pos[i + 1] }, initParams.topPolygon)) {
-      // розтягуємо по ОХ і зміщуємо вверх
-      pos.set([pos[i] * scaleX, pos[i + 1] + deltaY, pos[i + 2]], i);
-      let dx = pos[i] - initParams.geometry.frame.attributes.position.array[i];
-      let dy = pos[i + 1] - initParams.geometry.frame.attributes.position.array[i + 1];
-      uv.set(
-        [uv[(i / 3) * 2] - dx * ratioUX, uv[(i / 3) * 2 + 1] + dy * ratioVY],
-        (i / 3) * 2
-      );
-    } else if (isPointInPolygon({ x: pos[i], y: pos[i + 1] }, initParams.bottomPolygon)) {
-      // розтягуємо по ОХ
-      pos.set([pos[i] * scaleX, pos[i + 1], pos[i + 2]], i);
-      let dx = pos[i] - initParams.geometry.frame.attributes.position.array[i];
-      uv.set([uv[(i / 3) * 2] - dx * ratioUX, uv[(i / 3) * 2 + 1]], (i / 3) * 2);
-    } else if (isPointInPolygon({ x: pos[i], y: pos[i + 1] }, initParams.leftPolygon)) {
-      // розтягуємо по ОY
-      pos.set([pos[i], pos[i + 1] * scaleY, pos[i + 2]], i);
-      let dy = pos[i + 1] - initParams.geometry.frame.attributes.position.array[i + 1];
-      uv.set([uv[(i / 3) * 2], uv[(i / 3) * 2 + 1] + dy * ratioVY], (i / 3) * 2);
-    } else if (isPointInPolygon({ x: pos[i], y: pos[i + 1] }, initParams.rightPolygon)) {
-      // розтягуємо по ОY і зміщуємо вправо
-      pos.set([pos[i] + deltaX, pos[i + 1] * scaleY, pos[i + 2]], i);
-      let dx = pos[i] - initParams.geometry.frame.attributes.position.array[i];
-      let dy = pos[i + 1] - initParams.geometry.frame.attributes.position.array[i + 1];
-      uv.set(
-        [uv[(i / 3) * 2] - dx * ratioUX, uv[(i / 3) * 2 + 1] + dy * ratioVY],
-        (i / 3) * 2
-      );
-    } else {
-      console.log("lost point:");
-      console.log(pos[i] - dx, pos[i + 1], pos[i + 2]);
-    }
-  }
-
-  frameMesh.geometry = geo;
-}
-// ----------------------------
-// fixedPoints: {
-//     bottomLeft: [
-//       { x: -27.541, y: 22.899, z: -0.93 },
-//       { x: -27.849, y: 22.308, z: 0.359 },
-//       { x: -29.74, y: 20.262, z: 0.158 },
-//       { x: -35.369, y: 14.644, z: -0.076 },
-//       { x: -36.667, y: 13.342, z: -0.373 },
-//       { x: -38.34, y: 11.672, z: -0.805 },
-//       { x: -41.673, y: 8.608, z: -0.218 },
-//       { x: -43.046, y: 7.173, z: -0.16 },
-//       { x: -44.64, y: 5.458, z: -0.205 },
-//       { x: -47.278, y: 2.796, z: -0.255 },
-//       { x: -49.311, y: 0.71, z: -0.247 },
-//       { x: -49.994, y: 0.187, z: -0.584 },
-//       // { x: -26.833, y: 22.908, z: -1.068 },
-//       // { x: -27.494, y: 22.293, z: -0.207 },
-//       // { x: -29.74, y: 20.262, z: 0.158 },
-//       // { x: -35.369, y: 14.644, z: -0.076 },
-//       // { x: -36.667, y: 13.342, z: -0.373 },
-//       // { x: -38.34, y: 11.672, z: -0.805 },
-//       // { x: -41.673, y: 8.608, z: -0.218 },
-//       // { x: -43.046, y: 7.173, z: -0.16 },
-//       // { x: -44.64, y: 5.458, z: -0.205 },
-//       // { x: -47.278, y: 2.796, z: -0.255 },
-//       // { x: -49.311, y: 0.71, z: -0.247 },
-//       // { x: -50, y: 0.179, z: -0.24 },
-//     ],
-//     topLeft: [
-//       { x: -49.768, y: 169.827, z: -1.757 },
-//       { x: -49.686, y: 169.455, z: -0.56 },
-//       { x: -49.228, y: 169.024, z: -0.394 },
-//       { x: -47.244, y: 167.046, z: -0.254 },
-//       { x: -43.062, y: 162.578, z: -0.16 },
-//       { x: -41.628, y: 161.374, z: -0.155 },
-//       { x: -38.32, y: 158.3, z: -0.777 },
-//       { x: -36.765, y: 156.619, z: -0.362 },
-//       { x: -35.34, y: 155.417, z: -0.015 },
-//       { x: -32.386, y: 152.594, z: 0.072 },
-//       { x: -29.741, y: 149.867, z: 0.158 },
-//       { x: -27.827, y: 147.103, z: -0.27 },
-//       { x: -27.557, y: 146.521, z: -1.242 },
-//       // { x: -50.084, y: 170.034, z: -1.576 },
-//       // { x: -49.953, y: 169.954, z: -0.398 },
-//       // { x: -49.106, y: 169.296, z: -0.272 },
-//       // { x: -49.106, y: 169.296, z: -0.272 },
-
-//       // { x: -47.244, y: 167.046, z: -0.254 },
-//       // { x: -43.062, y: 162.578, z: -0.16 },
-//       // { x: -41.628, y: 161.374, z: -0.155 },
-//       // { x: -38.32, y: 158.3, z: -0.777 },
-//       // { x: -36.765, y: 156.619, z: -0.362 },
-//       // { x: -35.34, y: 155.417, z: -0.015 },
-//       // { x: -32.386, y: 152.594, z: 0.072 },
-//       // { x: -29.741, y: 149.867, z: 0.158 },
-//       // { x: -27.707, y: 147.743, z: -0.244 },
-//       // { x: -27.037, y: 147.048, z: -1.109 },
-//     ],
-//     topRight: [
-//       { x: 26.885, y: 147.065, z: 0.059 },
-//       { x: 27.798, y: 147.784, z: 1.266 },
-//       { x: 29.846, y: 149.868, z: 1.493 },
-//       { x: 35.294, y: 155.591, z: 1.572 },
-//       { x: 36.73, y: 156.785, z: 1.306 },
-//       { x: 38.376, y: 158.413, z: 0.985 },
-//       { x: 41.724, y: 161.292, z: 1.717 },
-//       { x: 42.968, y: 162.672, z: 1.768 },
-//       { x: 44.639, y: 164.26, z: 1.799 },
-//       { x: 47.2, y: 167.014, z: 1.882 },
-//       { x: 49.357, y: 169.565, z: 1.511 },
-//       { x: 49.7, y: 169.946, z: 0.636 },
-//       // { x: 27.01, y: 147.006, z: 0.115 },
-//       // { x: 27.492, y: 147.689, z: 1.053 },
-//       // { x: 29.846, y: 149.868, z: 1.493 },
-//       // { x: 35.294, y: 155.591, z: 1.572 },
-//       // { x: 36.73, y: 156.785, z: 1.306 },
-//       // { x: 38.376, y: 158.413, z: 0.985 },
-//       // { x: 41.724, y: 161.292, z: 1.717 },
-//       // { x: 42.968, y: 162.672, z: 1.768 },
-//       // { x: 44.639, y: 164.26, z: 1.799 },
-//       // { x: 47.2, y: 167.014, z: 1.882 },
-//       // { x: 49.045, y: 169.253, z: 1.506 },
-//       // { x: 49.713, y: 169.95, z: 0.627 },
-//     ],
-//     bottomRight: [
-//       { x: 49.872, y: 0.149, z: 0.626 },
-//       { x: 49.281, y: 0.947, z: 1.516 },
-//       { x: 47.2, y: 2.828, z: 1.882 },
-//       { x: 44.642, y: 5.453, z: 1.798 },
-//       { x: 41.567, y: 8.51, z: 1.655 },
-//       { x: 38.33, y: 11.676, z: 0.975 },
-//       { x: 36.732, y: 13.357, z: 1.302 },
-//       { x: 35.565, y: 14.837, z: 1.578 },
-//       { x: 32.608, y: 17.633, z: 1.529 },
-//       { x: 29.845, y: 20.261, z: 1.493 },
-//       { x: 27.544, y: 22.272, z: 1.022 },
-//       { x: 26.879, y: 23.15, z: 0.085 },
-//       // { x: 49.852, y: 0.132, z: 0.614 },
-//       // { x: 49.271, y: 0.941, z: 1.511 },
-//       // { x: 47.2, y: 2.828, z: 1.882 },
-//       // { x: 44.642, y: 5.453, z: 1.798 },
-//       // { x: 41.567, y: 8.51, z: 1.655 },
-//       // { x: 38.33, y: 11.676, z: 0.975 },
-//       // { x: 36.732, y: 13.357, z: 1.302 },
-//       // { x: 35.565, y: 14.837, z: 1.578 },
-//       // { x: 32.608, y: 17.633, z: 1.529 },
-//       // { x: 29.845, y: 20.261, z: 1.493 },
-//       // { x: 27.708, y: 22.292, z: 0.997 },
-//       // { x: 26.816, y: 22.939, z: 0.114 },
-//     ],
-//   },
-// --------------------------------
-async function getMaterialGLB1(id) {
-//   const loader = new THREE.GLTFLoader();
-
-//   const headers = {
-//     "x-lang": "ua",
-//     "Content-type": "application/x-www-form-urlencoded",
-//   };
-
-//   const json = {
-//     ids: id,
-//   };
-//   const body = `json=${JSON.stringify(json)}`;
-
-//   return fetch(
-//     "https://dev.roomtodo.com/api/category/productsByIds?key=4500282e6846fe6650de81bd35d27540",
-//     {
-//       headers,
-//       method: "POST",
-//       body,
-//     }
-//   )
-//     .then((response) => {
-//       return response.json();
-//     })
-//     .then((data) => {
-//       return new Promise((resolve, reject) => {
-//         loader.load(
-//           `https://dev.roomtodo.com${data.products[0].source.body.package}`,
-//           (glb) => {
-//             console.log(glb);
-//             const material = glb.scene.children[0].material;
-//             resolve(material);
-//           }
-//         );
-//       });
-//     });
-
-//   // const data = await response.json();
-
-//   // return new Promise((resolve, reject) => {
-//   //   loader.load(
-//   //     `https://dev.roomtodo.com${data.products[0].source.body.package}`,
-//   //     (glb) => {
-//   //       console.log(glb);
-//   //       const material = glb.scene.children[0].material;
-//   //       resolve(material);
-//   //     }
-//   //   );
-//   // });
-// }
+      // if (p.A.u > 0) {
+      //   kU = 1;
+      // } else if (p.A.u < 0) {
+      //   kU = -1;
+      // } else if (p.A.v > 0) {
+      //   kV = 1;
+      // } else if (p.A.v < 0) {
+      //   kV = -1;
+      // }
+const f = 10;
+      
 // -----------------------------------
+
+const dxA = p.A.x * addScale.x - p.A.x;
+      const dxB = p.B.x * addScale.x - p.B.x;
+      const dxC = p.C.x * addScale.x - p.C.x;
+
+      const dyA = p.A.y * addScale.y - p.A.y;
+      const dyB = p.B.y * addScale.y - p.B.y;
+      const dyC = p.C.y * addScale.y - p.C.y;
+
+      const dzA = p.A.z * addScale.z - p.A.z;
+      const dzB = p.B.z * addScale.z - p.B.z;
+const dzC = p.C.z * addScale.z - p.C.z;
+      
+// -----------------------------------
+
+// let scaleDir = "";
+    // let addSc = 0;
+
+    // if (addScale.x !== 1) {
+    //   scaleDir = "X";
+    //   // addSc = addScale.x;
+    // } else if (addScale.y !== 1) {
+    //   scaleDir = "Y";
+    //   // addSc = addScale.y;
+    // } else if (addScale.z !== 1) {
+    //   scaleDir = "Z";
+    //   // addSc = addScale.z;
+    // } else {
+    //   return;
+    // }
+
+    // ---------------------------------------
