@@ -98,7 +98,7 @@ class MaterialLoader {
   }
 
   generateButtonMarkup(data) {
-    frameImgCont.innerHTML = data
+    modelsCont.innerHTML = data
       .map((el) => {
         return `<div class="item" data-src="${el.src}">${el.name}</div>`;
       })

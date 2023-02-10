@@ -5,18 +5,24 @@ const rangeZEl = document.querySelector("#rangeZ");
 const rangeAllEl = document.querySelector("#rangeAll");
 
 const frameImgCont = document.querySelector("#frame-img");
-
 frameImgCont.addEventListener("click", (e) => {
+  const id = e.target.dataset.id;
+
+  model3D.children.forEach((mesh) => {
+    materialLoader.setMaterialOnMesh(mesh, id);
+  });
+});
+
+const modelsCont = document.querySelector("#models");
+
+modelsCont.addEventListener("click", (e) => {
   const src = e.target.dataset.src;
-  console.log(src);
   const len = model3D.children.length;
 
   for (let i = 0; i < len; i += 1) {
     model3D.children.pop();
   }
-  // const id = e.target.dataset.id;
-  // const localSrc = materialLoader.modelsLocalSrc[materialLoader.modelsIds.indexOf(id)];
-  // materialLoader.fetchData(id).then((data) =>
+
   materialLoader
     // .fetchModelGLB(`https://dev.roomtodo.com${data.products[0].source.body.package}`)
     .fetchModelGLB(src)
@@ -64,6 +70,8 @@ let geometryUpdater = new ModelGeometryUpdater();
 
 const materialLoader = new MaterialLoader();
 materialLoader.modelsIds = ["2964", "2821", "2313", "1707"];
+materialLoader.materialIds = ["32729", "32611", "738", "2053"];
+
 materialLoader.modelsLocalSrc = [
   "./models/polka1.glb",
   "./models/tumba.glb",
@@ -81,7 +89,7 @@ const data = [
   { name: "Двері", src: "./models/door.glb" },
 ];
 
-// materialLoader.generatePrevMarkup(materialLoader.modelsIds);
+materialLoader.generatePrevMarkup(materialLoader.materialIds);
 materialLoader.generateButtonMarkup(data);
 
 loaderGLTF.load("./models/testCubeAdmin.glb", async function (gltf) {
