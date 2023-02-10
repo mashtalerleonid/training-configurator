@@ -1403,15 +1403,15 @@ updateMeshUV(mesh, addScale) {
       // }
 
       // if (dir === "UP" || dir === "UN") {
-      //   uv.set(
-      //     [
-      //       p.A.u +
-      //         kx.val * dxA * ratioUV +
-      //         ky.val * dyA * ratioUV +
-      //         kz.val * dzA * ratioUV,
-      //     ],
-      //     indA * 2
-      //   );
+        // uv.set(
+        //   [
+        //     p.A.u +
+        //       kx.val * dxA * ratioUV +
+        //       ky.val * dyA * ratioUV +
+        //       kz.val * dzA * ratioUV,
+        //   ],
+        //   indA * 2
+        // );
 
       //   uv.set(
       //     [
@@ -1538,3 +1538,151 @@ const dzC = p.C.z * addScale.z - p.C.z;
     // }
 
     // ---------------------------------------
+
+     // const UPos = new THREE.Vector3(0, 10, 0);
+    // const UNeg = new THREE.Vector3(0, -10, 0);
+    // const VPos = new THREE.Vector3(10, 0, 0);
+    // const VNeg = new THREE.Vector3(-10, 0, 0);
+
+    // const Auv = new THREE.Vector3(p.A.v, p.A.u, 0);
+      // const Buv = new THREE.Vector3(p.B.v, p.B.u, 0);
+      // const Cuv = new THREE.Vector3(p.C.v, p.C.u, 0);
+
+      // --------------------------------------------
+
+      else if (
+        (Math.abs(angAxisToABC.AB - angUPosToABC.AB) < lim &&
+          Math.abs(angAxisToABC.BC - angUPosToABC.BC) < lim) ||
+        (Math.abs(angAxisToABC.BC - angUPosToABC.BC) < lim &&
+          Math.abs(angAxisToABC.CA - angUPosToABC.CA) < lim) ||
+        (Math.abs(angAxisToABC.AB - angUPosToABC.AB) < lim &&
+          Math.abs(angAxisToABC.CA - angUPosToABC.CA) < lim)
+      ) {
+        dir = "UP";
+      } else if (
+        (Math.abs(angAxisToABC.AB - angUNegToABC.AB) < lim &&
+          Math.abs(angAxisToABC.BC - angUNegToABC.BC) < lim) ||
+        (Math.abs(angAxisToABC.BC - angUNegToABC.BC) < lim &&
+          Math.abs(angAxisToABC.CA - angUNegToABC.CA) < lim) ||
+        (Math.abs(angAxisToABC.AB - angUNegToABC.AB) < lim &&
+          Math.abs(angAxisToABC.CA - angUNegToABC.CA) < lim)
+      ) {
+        dir = "UN";
+      } else if (
+        (Math.abs(angAxisToABC.AB - angVPosToABC.AB) < lim &&
+          Math.abs(angAxisToABC.BC - angVPosToABC.BC) < lim) ||
+        (Math.abs(angAxisToABC.BC - angVPosToABC.BC) < lim &&
+          Math.abs(angAxisToABC.CA - angVPosToABC.CA) < lim) ||
+        (Math.abs(angAxisToABC.AB - angVPosToABC.AB) < lim &&
+          Math.abs(angAxisToABC.CA - angVPosToABC.CA) < lim)
+      ) {
+        dir = "VP";
+      } else if (
+        (Math.abs(angAxisToABC.AB - angVNegToABC.AB) < lim &&
+          Math.abs(angAxisToABC.BC - angVNegToABC.BC) < lim) ||
+        (Math.abs(angAxisToABC.BC - angVNegToABC.BC) < lim &&
+          Math.abs(angAxisToABC.CA - angVNegToABC.CA) < lim) ||
+        (Math.abs(angAxisToABC.AB - angVNegToABC.AB) < lim &&
+          Math.abs(angAxisToABC.CA - angVNegToABC.CA) < lim)
+      ) {
+        dir = "VN";
+}
+      
+// -------------------------------------------------------------
+
+const ppp = {
+        A: {
+          x: pos[indA * 3],
+          y: pos[indA * 3 + 1],
+          z: pos[indA * 3 + 2],
+          u: uvInit[indA * 2],
+          v: uvInit[indA * 2 + 1],
+          dx: pos[indA * 3] * scale.x - pos[indA * 3] * initScale,
+          dy: pos[indA * 3 + 1] * scale.y - pos[indA * 3 + 1] * initScale,
+          dz: pos[indA * 3 + 2] * scale.z - pos[indA * 3 + 2] * initScale,
+        },
+
+        B: {
+          x: pos[indB * 3],
+          y: pos[indB * 3 + 1],
+          z: pos[indB * 3 + 2],
+          u: uvInit[indB * 2],
+          v: uvInit[indB * 2 + 1],
+          dx: pos[indB * 3] * scale.x - pos[indB * 3] * initScale,
+          dy: pos[indB * 3 + 1] * scale.y - pos[indB * 3 + 1] * initScale,
+          dz: pos[indB * 3 + 2] * scale.z - pos[indB * 3 + 2] * initScale,
+        },
+
+        C: {
+          x: pos[indC * 3],
+          y: pos[indC * 3 + 1],
+          z: pos[indC * 3 + 2],
+          u: uvInit[indC * 2],
+          v: uvInit[indC * 2 + 1],
+          dx: pos[indC * 3] * scale.x - pos[indC * 3] * initScale,
+          dy: pos[indC * 3 + 1] * scale.y - pos[indC * 3 + 1] * initScale,
+          dz: pos[indC * 3 + 2] * scale.z - pos[indC * 3 + 2] * initScale,
+        },
+};
+      
+// -------------------------------------------------------------
+
+// if (scaleDir === "X") {
+      //   if (dir === "UP") {
+      //     uv.set([p.A.u + p.A.dx * ratioUV], indA * 2);
+      //     uv.set([p.B.u + p.B.dx * ratioUV], indB * 2);
+      //     uv.set([p.C.u + p.C.dx * ratioUV], indC * 2);
+      //   } else if (dir === "UN") {
+      //     uv.set([p.A.u - p.A.dx * ratioUV], indA * 2);
+      //     uv.set([p.B.u - p.B.dx * ratioUV], indB * 2);
+      //     uv.set([p.C.u - p.C.dx * ratioUV], indC * 2);
+      //   } else if (dir === "VP") {
+      //     uv.set([p.A.v + p.A.dx * ratioUV], indA * 2 + 1);
+      //     uv.set([p.B.v + p.B.dx * ratioUV], indB * 2 + 1);
+      //     uv.set([p.C.v + p.C.dx * ratioUV], indC * 2 + 1);
+      //   } else if (dir === "VN") {
+      //     uv.set([p.A.v - p.A.dx * ratioUV], indA * 2 + 1);
+      //     uv.set([p.B.v - p.B.dx * ratioUV], indB * 2 + 1);
+      //     uv.set([p.C.v - p.C.dx * ratioUV], indC * 2 + 1);
+      //   }
+      // } else if (scaleDir === "Y") {
+      //   if (dir === "UP") {
+      //     uv.set([p.A.u + p.A.dy * ratioUV], indA * 2);
+      //     uv.set([p.B.u + p.B.dy * ratioUV], indB * 2);
+      //     uv.set([p.C.u + p.C.dy * ratioUV], indC * 2);
+      //   } else if (dir === "UN") {
+      //     uv.set([p.A.u - p.A.dy * ratioUV], indA * 2);
+      //     uv.set([p.B.u - p.B.dy * ratioUV], indB * 2);
+      //     uv.set([p.C.u - p.C.dy * ratioUV], indC * 2);
+      //   } else if (dir === "VP") {
+      //     uv.set([p.A.v + p.A.dy * ratioUV], indA * 2 + 1);
+      //     uv.set([p.B.v + p.B.dy * ratioUV], indB * 2 + 1);
+      //     uv.set([p.C.v + p.C.dy * ratioUV], indC * 2 + 1);
+      //   } else if (dir === "VN") {
+      //     uv.set([p.A.v - p.A.dy * ratioUV], indA * 2 + 1);
+      //     uv.set([p.B.v - p.B.dy * ratioUV], indB * 2 + 1);
+      //     uv.set([p.C.v - p.C.dy * ratioUV], indC * 2 + 1);
+      //   }
+      // } else if (scaleDir === "Z") {
+      //   if (dir === "UP") {
+      //     uv.set([p.A.u + p.A.dz * ratioUV], indA * 2);
+      //     uv.set([p.B.u + p.B.dz * ratioUV], indB * 2);
+      //     uv.set([p.C.u + p.C.dz * ratioUV], indC * 2);
+      //   } else if (dir === "UN") {
+      //     uv.set([p.A.u - p.A.dz * ratioUV], indA * 2);
+      //     uv.set([p.B.u - p.B.dz * ratioUV], indB * 2);
+      //     uv.set([p.C.u - p.C.dz * ratioUV], indC * 2);
+      //   } else if (dir === "VP") {
+      //     uv.set([p.A.v + p.A.dz * ratioUV], indA * 2 + 1);
+      //     uv.set([p.B.v + p.B.dz * ratioUV], indB * 2 + 1);
+      //     uv.set([p.C.v + p.C.dz * ratioUV], indC * 2 + 1);
+      //   } else if (dir === "VN") {
+      //     uv.set([p.A.v - p.A.dz * ratioUV], indA * 2 + 1);
+      //     uv.set([p.B.v - p.B.dz * ratioUV], indB * 2 + 1);
+      //     uv.set([p.C.v - p.C.dz * ratioUV], indC * 2 + 1);
+      //   }
+      // }
+
+      // -----------------------------------------
+
+      

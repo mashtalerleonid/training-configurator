@@ -27,8 +27,6 @@ class MaterialLoader {
   async fetchModelGLB(src) {
     return new Promise((resolve, reject) => {
       this.loaderGLTF.load(src, (gltf) => {
-        console.log(gltf.scene);
-
         const obj3D = new THREE.Object3D();
         gltf.scene.traverse((el) => {
           if (el.type === "Mesh") {

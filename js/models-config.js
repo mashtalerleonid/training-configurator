@@ -72,17 +72,13 @@ materialLoader.modelsLocalSrc = [
 ];
 
 const data = [
-  { name: "Шкаф", src: "./models/shkaf.glb" },
-  { name: "Стіл", src: "./models/table-fixed.glb" },
   { name: "Тумба", src: "./models/polka.glb" },
-  { name: "Крісло", src: "./models/chair.glb" },
-  { name: "Диван", src: "./models/sofa2.glb" },
-  { name: "Камін", src: "./models/kamin.glb" },
-  { name: "Вікно", src: "./models/window.glb" },
-  { name: "Двері_1", src: "./models/door2.glb" },
-  { name: "Софа", src: "./models/sofa.glb" },
-  { name: "Двері_2", src: "./models/door.glb" },
   { name: "Ліжко", src: "./models/bed.glb" },
+  { name: "Диван", src: "./models/sofa2.glb" },
+  { name: "Вікно", src: "./models/arc-window.glb" },
+  { name: "Крісло", src: "./models/chair.glb" },
+  { name: "Софа", src: "./models/sofa.glb" },
+  { name: "Двері", src: "./models/door.glb" },
 ];
 
 // materialLoader.generatePrevMarkup(materialLoader.modelsIds);
@@ -90,14 +86,15 @@ materialLoader.generateButtonMarkup(data);
 
 loaderGLTF.load("./models/testCubeAdmin.glb", async function (gltf) {
   materialLoader.testMaterial = gltf.scene.children[0].material;
+  materialLoader.testMaterial.side = THREE.FrontSide;
 
-  loaderGLTF.load("./models/shkaf.glb", async function (gltf) {
+  // loaderGLTF.load("./models/polka-fix-3DMax.glb", async function (gltf) {
+  loaderGLTF.load("./models/polka.glb", async function (gltf) {
     gltf.scene.traverse((el) => {
       if (el.type === "Mesh") {
         model3D.add(el.clone());
       }
     });
-    console.log(model3D);
     model3D.children.forEach((mesh) => {
       materialLoader.setTestMaterialOnMesh(mesh);
     });
@@ -108,7 +105,6 @@ loaderGLTF.load("./models/testCubeAdmin.glb", async function (gltf) {
 
 rangeXEl.addEventListener("input", (e) => {
   curParams.width = Number(rangeXEl.value);
-  // geometryUpdater.setModelSize(model3D, curParams);
   geometryUpdater.setWidth(model3D, curParams.width);
   renderer.render(scene, camera);
   rangeXEl.parentNode.querySelector("span").textContent = `Width = ${rangeXEl.value}`;
@@ -116,7 +112,6 @@ rangeXEl.addEventListener("input", (e) => {
 
 rangeYEl.addEventListener("input", (e) => {
   curParams.height = Number(rangeYEl.value);
-  // geometryUpdater.setModelSize(model3D, curParams);
   geometryUpdater.setHeight(model3D, curParams.height);
   renderer.render(scene, camera);
   rangeYEl.parentNode.querySelector("span").textContent = `Height = ${rangeYEl.value}`;
@@ -124,21 +119,15 @@ rangeYEl.addEventListener("input", (e) => {
 
 rangeZEl.addEventListener("input", (e) => {
   curParams.depth = Number(rangeZEl.value);
-  // geometryUpdater.setModelSize(model3D, curParams);
   geometryUpdater.setDepth(model3D, curParams.depth);
   renderer.render(scene, camera);
   rangeZEl.parentNode.querySelector("span").textContent = `Depth = ${rangeZEl.value}`;
 });
 
-// rangeAllEl.addEventListener("input", (e) => {
-//   curParams.width *= 1.1;
-//   curParams.height *= 1.1;
-//   curParams.depth *= 1.1;
-//   // geometryUpdater.updateModelGeom
-//   geometryUpdater.setModelSize(model3D, curParams);
-//   // etry(curParams);
-//   renderer.render(scene, camera);
-// });
+rangeAllEl.addEventListener("input", (e) => {
+  geometryUpdater.scaleAll(model3D, Number(rangeAllEl.value));
+  renderer.render(scene, camera);
+});
 
 // -------functions
 function initScene() {
@@ -199,24 +188,14 @@ function render() {
 }
 
 function onNewModelLoaded(model3D) {
+  console.log(model3D);
+
   const size = geometryUpdater.getModelSize(model3D);
-  const mesh = model3D.children[0];
-  const xMin = mesh.geometry.boundingBox.min.x;
-  const xMax = mesh.geometry.boundingBox.max.x;
-  const yMin = mesh.geometry.boundingBox.min.y;
-  const yMax = mesh.geometry.boundingBox.max.y;
-  const zMin = mesh.geometry.boundingBox.min.z;
-  const zMax = mesh.geometry.boundingBox.max.z;
 
-  // model3D.children.forEach((mesh, index) => {
-  //   mesh.geometry.translate(size.width / 2 + 10, 0, size.depth / 2 + 10);
-  // });
-
-  // model3D.children.forEach((mesh, index) => {
-  //   mesh.geometry.translate(0, -size.height / 2, 0);
-  // });
-
-  // model3D.remove(model3D.children[2]);
+  model3D.children.forEach((mesh, index) => {
+    mesh.geometry = mesh.geometry.toNonIndexed();
+    // mesh.geometry.translate(size.width / 2 + 10, 0, size.depth / 2 + 10);
+  });
 
   curParams.width = Math.round(size.width);
   curParams.height = Math.round(size.height);
@@ -233,6 +212,8 @@ function onNewModelLoaded(model3D) {
   rangeYEl.value = curParams.height;
   rangeZEl.value = curParams.depth;
 
+  rangeAllEl.value = 1;
+
   // geometryUpdater.setModelSize(model3D, curParams);
   rangeXEl.parentNode.querySelector("span").textContent = `Width = ${rangeXEl.value}`;
   rangeYEl.parentNode.querySelector("span").textContent = `Height = ${rangeYEl.value}`;
@@ -240,7 +221,8 @@ function onNewModelLoaded(model3D) {
   render();
 }
 
-const v1 = new THREE.Vector3(0, -1, 0);
+// SOME TESTS
+const v1 = new THREE.Vector3(10, 0, 0);
 const v2 = new THREE.Vector3(10, 10, 0);
 // console.log((v2.angleTo(v1) / Math.PI) * 180);
 const A = { x: 5, y: 0, z: 0 };
@@ -267,3 +249,11 @@ plane.setFromCoplanarPoints(
   new THREE.Vector3(0, 5, -5),
   new THREE.Vector3(0, 0, -5)
 );
+
+const proj = new THREE.Vector3();
+
+plane.projectPoint(new THREE.Vector3(5, 0, 0), proj);
+const axisVector = new THREE.Vector3().subVectors(A, A);
+console.log(axisVector);
+const ABB = (v1.angleTo(new THREE.Vector3(-10, 0, 0)) * 180) / Math.PI;
+// console.log(ABB);

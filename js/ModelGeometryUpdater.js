@@ -4,7 +4,19 @@ class ModelGeometryUpdater {
 
     this.scaleModel(model3D, addScale);
 
-    this.updateModelUV(model3D, addScale);
+    this.updateModelUV(model3D, "All");
+  }
+
+  scaleAll(model3D, scale) {
+    model3D.children.forEach((mesh) => {
+      const initScale = mesh.scale.x > 10 ? 100 : 1;
+
+      mesh.scale.x = scale * initScale;
+      mesh.scale.y = scale * initScale;
+      mesh.scale.z = scale * initScale;
+    });
+
+    this.updateModelUV(model3D, "All");
   }
 
   setWidth(model3D, width) {
@@ -67,76 +79,106 @@ class ModelGeometryUpdater {
     });
   }
 
-  updateModelUV(model3D, scaleDir) {
+  updateModelUV(model3D, scaleDir, addScale) {
     model3D.children.forEach((mesh, index) => {
-      this.updateMeshUV(mesh, scaleDir);
+      this.updateMeshUV(mesh, scaleDir, addScale);
     });
   }
 
   updateMeshUV(mesh, scaleDir) {
+    class Point {
+      constructor(index, pos, uv, scale, initScale) {
+        this.x = pos[index * 3];
+        this.y = pos[index * 3 + 1];
+        this.z = pos[index * 3 + 2];
+        this.u = uv[index * 2];
+        this.v = uv[index * 2 + 1];
+        this.dx = this.x * scale.x - this.x * initScale;
+        this.dy = this.y * scale.y - this.y * initScale;
+        this.dz = this.z * scale.z - this.z * initScale;
+      }
+    }
+
+    function checkAngles(XYZ, UV) {
+      return (
+        Math.abs(XYZ.AB - UV.AB) < limRad &&
+        Math.abs(XYZ.BC - UV.BC) < limRad &&
+        Math.abs(XYZ.CA - UV.CA) < limRad
+      );
+    }
+
+    // --------------------
+
     if (!mesh.userData.initUV) {
       mesh.userData.initUV = mesh.geometry.clone().attributes.uv.array;
     }
-    const scale = { x: mesh.scale.x, y: mesh.scale.y, z: mesh.scale.z };
-    const uv = mesh.geometry.attributes.uv.array;
-    // const uv = [...mesh.userData.initUV];
-    // const uvInit = [...uv];
-    const uvInit = mesh.userData.initUV;
+
     const pos = mesh.geometry.attributes.position.array;
-    const normal = mesh.geometry.attributes.normal.array;
-    const index = mesh.geometry.index.array;
+    const uv = mesh.geometry.attributes.uv.array;
+    const uvInit = mesh.userData.initUV;
 
+    const scale = { x: mesh.scale.x, y: mesh.scale.y, z: mesh.scale.z };
+
+    const index = [];
+    for (let i = 0; i < mesh.geometry.attributes.position.count; i++) {
+      index[i] = i;
+    }
+
+    const initScale = scale.x > 10 ? 100 : 1;
     const ratioUV = 0.01;
-    const lim = 20;
-    const limN = 0.6;
+    const limGrad = 10;
+    const limRad = (limGrad * Math.PI) / 180;
+    const limN = 0.7;
+    let unknownTriangles = 0;
 
-    let dir = "check dir";
-
-    let k = 0;
-
-    // mesh.geometry.translate(size.width / 2 + 10, 0, size.depth / 2 + 10);
-
-    const UPos = new THREE.Vector3(0, 10, 0);
-    const UNeg = new THREE.Vector3(0, -10, 0);
-    const VPos = new THREE.Vector3(10, 0, 0);
-    const VNeg = new THREE.Vector3(-10, 0, 0);
+    const UPos = new THREE.Vector3(10, 0, 0);
+    const UNeg = new THREE.Vector3(-10, 0, 0);
+    const VPos = new THREE.Vector3(0, 0, 10);
+    const VNeg = new THREE.Vector3(0, 0, -10);
 
     const axisX = new THREE.Vector3(10, 0, 0);
     const axisY = new THREE.Vector3(0, 10, 0);
     const axisZ = new THREE.Vector3(0, 0, 10);
 
     for (let i = 0; i < index.length; i += 3) {
+      let dir = "check dir";
+      let axis = null;
+      let delta = null;
+
       const indA = index[i];
       const indB = index[i + 1];
       const indC = index[i + 2];
 
+      if (scaleDir === "All") {
+        uv.set(
+          [
+            (uvInit[indA * 2] * scale.x) / initScale,
+            (uvInit[indA * 2 + 1] * scale.x) / initScale,
+          ],
+          indA * 2
+        );
+        uv.set(
+          [
+            (uvInit[indB * 2] * scale.x) / initScale,
+            (uvInit[indB * 2 + 1] * scale.x) / initScale,
+          ],
+          indB * 2
+        );
+        uv.set(
+          [
+            (uvInit[indC * 2] * scale.x) / initScale,
+            (uvInit[indC * 2 + 1] * scale.x) / initScale,
+          ],
+          indC * 2
+        );
+
+        continue;
+      }
+
       const p = {
-        A: {
-          x: pos[indA * 3],
-          y: pos[indA * 3 + 1],
-          z: pos[indA * 3 + 2],
-          u: uvInit[indA * 2],
-          v: uvInit[indA * 2 + 1],
-          n: { x: normal[indA * 3], y: normal[indA * 3 + 1], z: normal[indA * 3 + 2] },
-        },
-
-        B: {
-          x: pos[indB * 3],
-          y: pos[indB * 3 + 1],
-          z: pos[indB * 3 + 2],
-          u: uvInit[indB * 2],
-          v: uvInit[indB * 2 + 1],
-          n: { x: normal[indB * 3], y: normal[indB * 3 + 1], z: normal[indB * 3 + 2] },
-        },
-
-        C: {
-          x: pos[indC * 3],
-          y: pos[indC * 3 + 1],
-          z: pos[indC * 3 + 2],
-          u: uvInit[indC * 2],
-          v: uvInit[indC * 2 + 1],
-          n: { x: normal[indC * 3], y: normal[indC * 3 + 1], z: normal[indC * 3 + 2] },
-        },
+        A: new Point(indA, pos, uvInit, scale, initScale),
+        B: new Point(indB, pos, uvInit, scale, initScale),
+        C: new Point(indC, pos, uvInit, scale, initScale),
       };
 
       const A = new THREE.Vector3(p.A.x, p.A.y, p.A.z);
@@ -147,61 +189,63 @@ class ModelGeometryUpdater {
       const BC = new THREE.Vector3().subVectors(C, B);
       const CA = new THREE.Vector3().subVectors(A, C);
 
-      const Auv = new THREE.Vector3(p.A.v, p.A.u, 0);
-      const Buv = new THREE.Vector3(p.B.v, p.B.u, 0);
-      const Cuv = new THREE.Vector3(p.C.v, p.C.u, 0);
+      const Auv = new THREE.Vector3(p.A.u, 0, p.A.v);
+      const Buv = new THREE.Vector3(p.B.u, 0, p.B.v);
+      const Cuv = new THREE.Vector3(p.C.u, 0, p.C.v);
 
       const ABuv = new THREE.Vector3().subVectors(Buv, Auv);
       const BCuv = new THREE.Vector3().subVectors(Cuv, Buv);
       const CAuv = new THREE.Vector3().subVectors(Auv, Cuv);
 
       const angUPosToABC = {
-        AB: (UPos.angleTo(ABuv) * 180) / Math.PI,
-        BC: (UPos.angleTo(BCuv) * 180) / Math.PI,
-        CA: (UPos.angleTo(CAuv) * 180) / Math.PI,
+        AB: UPos.angleTo(ABuv),
+        BC: UPos.angleTo(BCuv),
+        CA: UPos.angleTo(CAuv),
       };
 
       const angUNegToABC = {
-        AB: (UNeg.angleTo(ABuv) * 180) / Math.PI,
-        BC: (UNeg.angleTo(BCuv) * 180) / Math.PI,
-        CA: (UNeg.angleTo(CAuv) * 180) / Math.PI,
+        AB: UNeg.angleTo(ABuv),
+        BC: UNeg.angleTo(BCuv),
+        CA: UNeg.angleTo(CAuv),
       };
 
       const angVPosToABC = {
-        AB: (VPos.angleTo(ABuv) * 180) / Math.PI,
-        BC: (VPos.angleTo(BCuv) * 180) / Math.PI,
-        CA: (VPos.angleTo(CAuv) * 180) / Math.PI,
+        AB: VPos.angleTo(ABuv),
+        BC: VPos.angleTo(BCuv),
+        CA: VPos.angleTo(CAuv),
       };
 
       const angVNegToABC = {
-        AB: (VNeg.angleTo(ABuv) * 180) / Math.PI,
-        BC: (VNeg.angleTo(BCuv) * 180) / Math.PI,
-        CA: (VNeg.angleTo(CAuv) * 180) / Math.PI,
+        AB: VNeg.angleTo(ABuv),
+        BC: VNeg.angleTo(BCuv),
+        CA: VNeg.angleTo(CAuv),
       };
 
       const plane = new THREE.Plane();
       plane.setFromCoplanarPoints(A, B, C);
 
-      let axis = null;
-
       if (scaleDir === "X") {
         if (Math.abs(plane.normal.x) > limN) {
           continue;
         }
+
         axis = axisX;
+        delta = "dx";
       } else if (scaleDir === "Y") {
         if (Math.abs(plane.normal.y) > limN) {
           continue;
         }
+
         axis = axisY;
+        delta = "dy";
       } else if (scaleDir === "Z") {
         if (Math.abs(plane.normal.z) > limN) {
           continue;
         }
+
         axis = axisZ;
+        delta = "dz";
       }
-      // mesh.geometry.translate(size.width / 2 + 10, 0, size.depth / 2 + 10);
-      // mesh.geometry.translate(10, 10, 10);
 
       const OProj = new THREE.Vector3();
       const AxisProj = new THREE.Vector3();
@@ -212,146 +256,45 @@ class ModelGeometryUpdater {
       const axisVector = new THREE.Vector3().subVectors(AxisProj, OProj);
 
       const angAxisToABC = {
-        AB: (axisVector.angleTo(AB) * 180) / Math.PI,
-        BC: (axisVector.angleTo(BC) * 180) / Math.PI,
-        CA: (axisVector.angleTo(CA) * 180) / Math.PI,
+        AB: axisVector.angleTo(AB),
+        BC: axisVector.angleTo(BC),
+        CA: axisVector.angleTo(CA),
       };
 
-      if (
-        Math.abs(angAxisToABC.AB - angUPosToABC.AB) < lim &&
-        Math.abs(angAxisToABC.BC - angUPosToABC.BC) < lim &&
-        Math.abs(angAxisToABC.CA - angUPosToABC.CA) < lim
-      ) {
+      if (checkAngles(angAxisToABC, angUPosToABC)) {
         dir = "UP";
-      } else if (
-        Math.abs(angAxisToABC.AB - angUNegToABC.AB) < lim &&
-        Math.abs(angAxisToABC.BC - angUNegToABC.BC) < lim &&
-        Math.abs(angAxisToABC.CA - angUNegToABC.CA) < lim
-      ) {
+      } else if (checkAngles(angAxisToABC, angUNegToABC)) {
         dir = "UN";
-      } else if (
-        Math.abs(angAxisToABC.AB - angVPosToABC.AB) < lim &&
-        Math.abs(angAxisToABC.BC - angVPosToABC.BC) < lim &&
-        Math.abs(angAxisToABC.CA - angVPosToABC.CA) < lim
-      ) {
+      } else if (checkAngles(angAxisToABC, angVPosToABC)) {
         dir = "VP";
-      } else if (
-        Math.abs(angAxisToABC.AB - angVNegToABC.AB) < lim &&
-        Math.abs(angAxisToABC.BC - angVNegToABC.BC) < lim &&
-        Math.abs(angAxisToABC.CA - angVNegToABC.CA) < lim
-      ) {
+      } else if (checkAngles(angAxisToABC, angVNegToABC)) {
         dir = "VN";
-      }
-      // else if (
-      //   (Math.abs(angAxisToABC.AB - angUPosToABC.AB) < lim &&
-      //     Math.abs(angAxisToABC.BC - angUPosToABC.BC) < lim) ||
-      //   (Math.abs(angAxisToABC.BC - angUPosToABC.BC) < lim &&
-      //     Math.abs(angAxisToABC.CA - angUPosToABC.CA) < lim) ||
-      //   (Math.abs(angAxisToABC.AB - angUPosToABC.AB) < lim &&
-      //     Math.abs(angAxisToABC.CA - angUPosToABC.CA) < lim)
-      // ) {
-      //   dir = "UP";
-      // } else if (
-      //   (Math.abs(angAxisToABC.AB - angUNegToABC.AB) < lim &&
-      //     Math.abs(angAxisToABC.BC - angUNegToABC.BC) < lim) ||
-      //   (Math.abs(angAxisToABC.BC - angUNegToABC.BC) < lim &&
-      //     Math.abs(angAxisToABC.CA - angUNegToABC.CA) < lim) ||
-      //   (Math.abs(angAxisToABC.AB - angUNegToABC.AB) < lim &&
-      //     Math.abs(angAxisToABC.CA - angUNegToABC.CA) < lim)
-      // ) {
-      //   dir = "UN";
-      // } else if (
-      //   (Math.abs(angAxisToABC.AB - angVPosToABC.AB) < lim &&
-      //     Math.abs(angAxisToABC.BC - angVPosToABC.BC) < lim) ||
-      //   (Math.abs(angAxisToABC.BC - angVPosToABC.BC) < lim &&
-      //     Math.abs(angAxisToABC.CA - angVPosToABC.CA) < lim) ||
-      //   (Math.abs(angAxisToABC.AB - angVPosToABC.AB) < lim &&
-      //     Math.abs(angAxisToABC.CA - angVPosToABC.CA) < lim)
-      // ) {
-      //   dir = "VP";
-      // } else if (
-      //   (Math.abs(angAxisToABC.AB - angVNegToABC.AB) < lim &&
-      //     Math.abs(angAxisToABC.BC - angVNegToABC.BC) < lim) ||
-      //   (Math.abs(angAxisToABC.BC - angVNegToABC.BC) < lim &&
-      //     Math.abs(angAxisToABC.CA - angVNegToABC.CA) < lim) ||
-      //   (Math.abs(angAxisToABC.AB - angVNegToABC.AB) < lim &&
-      //     Math.abs(angAxisToABC.CA - angVNegToABC.CA) < lim)
-      // ) {
-      //   dir = "VN";
-      // }
-      else {
-        // console.log("out of range");
-        // console.log(angAxisToABC);
-        // console.log(angUPosToABC);
-        // console.log(angUNegToABC);
-        // console.log(angVPosToABC);
-        // console.log(angVNegToABC);
-        console.log(plane.normal);
-        k += 1;
+      } else {
+        unknownTriangles += 1;
       }
 
-      if (scaleDir === "X") {
-        if (dir === "UP") {
-          uv.set([p.A.x * scale.x * ratioUV], indA * 2);
-          uv.set([p.B.x * scale.x * ratioUV], indB * 2);
-          uv.set([p.C.x * scale.x * ratioUV], indC * 2);
-        } else if (dir === "UN") {
-          uv.set([-p.A.x * scale.x * ratioUV], indA * 2);
-          uv.set([-p.B.x * scale.x * ratioUV], indB * 2);
-          uv.set([-p.C.x * scale.x * ratioUV], indC * 2);
-        } else if (dir === "VP") {
-          uv.set([p.A.x * scale.x * ratioUV], indA * 2 + 1);
-          uv.set([p.B.x * scale.x * ratioUV], indB * 2 + 1);
-          uv.set([p.C.x * scale.x * ratioUV], indC * 2 + 1);
-        } else if (dir === "VN") {
-          uv.set([-p.A.x * scale.x * ratioUV], indA * 2 + 1);
-          uv.set([-p.B.x * scale.x * ratioUV], indB * 2 + 1);
-          uv.set([-p.C.x * scale.x * ratioUV], indC * 2 + 1);
-        }
-      } else if (scaleDir === "Y") {
-        if (dir === "UP") {
-          uv.set([p.A.y * scale.y * ratioUV], indA * 2);
-          uv.set([p.B.y * scale.y * ratioUV], indB * 2);
-          uv.set([p.C.y * scale.y * ratioUV], indC * 2);
-        } else if (dir === "UN") {
-          uv.set([-p.A.y * scale.y * ratioUV], indA * 2);
-          uv.set([-p.B.y * scale.y * ratioUV], indB * 2);
-          uv.set([-p.C.y * scale.y * ratioUV], indC * 2);
-        } else if (dir === "VP") {
-          uv.set([p.A.y * scale.y * ratioUV], indA * 2 + 1);
-          uv.set([p.B.y * scale.y * ratioUV], indB * 2 + 1);
-          uv.set([p.C.y * scale.y * ratioUV], indC * 2 + 1);
-        } else if (dir === "VN") {
-          uv.set([-p.A.y * scale.y * ratioUV], indA * 2 + 1);
-          uv.set([-p.B.y * scale.y * ratioUV], indB * 2 + 1);
-          uv.set([-p.C.y * scale.y * ratioUV], indC * 2 + 1);
-        }
-      } else if (scaleDir === "Z") {
-        if (dir === "UP") {
-          uv.set([p.A.z * scale.z * ratioUV], indA * 2);
-          uv.set([p.B.z * scale.z * ratioUV], indB * 2);
-          uv.set([p.C.z * scale.z * ratioUV], indC * 2);
-        } else if (dir === "UN") {
-          uv.set([-p.A.z * scale.z * ratioUV], indA * 2);
-          uv.set([-p.B.z * scale.z * ratioUV], indB * 2);
-          uv.set([-p.C.z * scale.z * ratioUV], indC * 2);
-        } else if (dir === "VP") {
-          uv.set([p.A.z * scale.z * ratioUV], indA * 2 + 1);
-          uv.set([p.B.z * scale.z * ratioUV], indB * 2 + 1);
-          uv.set([p.C.z * scale.z * ratioUV], indC * 2 + 1);
-        } else if (dir === "VN") {
-          uv.set([-p.A.z * scale.z * ratioUV], indA * 2 + 1);
-          uv.set([-p.B.z * scale.z * ratioUV], indB * 2 + 1);
-          uv.set([-p.C.z * scale.z * ratioUV], indC * 2 + 1);
-        }
+      if (dir === "UP") {
+        uv.set([p.A.u + p.A[delta] * ratioUV], indA * 2);
+        uv.set([p.B.u + p.B[delta] * ratioUV], indB * 2);
+        uv.set([p.C.u + p.C[delta] * ratioUV], indC * 2);
+      } else if (dir === "UN") {
+        uv.set([p.A.u - p.A[delta] * ratioUV], indA * 2);
+        uv.set([p.B.u - p.B[delta] * ratioUV], indB * 2);
+        uv.set([p.C.u - p.C[delta] * ratioUV], indC * 2);
+      } else if (dir === "VP") {
+        uv.set([p.A.v + p.A[delta] * ratioUV], indA * 2 + 1);
+        uv.set([p.B.v + p.B[delta] * ratioUV], indB * 2 + 1);
+        uv.set([p.C.v + p.C[delta] * ratioUV], indC * 2 + 1);
+      } else if (dir === "VN") {
+        uv.set([p.A.v - p.A[delta] * ratioUV], indA * 2 + 1);
+        uv.set([p.B.v - p.B[delta] * ratioUV], indB * 2 + 1);
+        uv.set([p.C.v - p.C[delta] * ratioUV], indC * 2 + 1);
       }
-      // ----------------
     }
 
     mesh.geometry.attributes.uv.needsUpdate = true;
-    console.log(k);
-    // mesh.geometry.translate(-size.width / 2 - 10, 0, -size.depth / 2 - 10);
-    // mesh.geometry.translate(0, size.height / 2, 0);
+
+    // console.log(unknownTriangles);
   }
 
   setRatioUVToMeshes(model3D) {
