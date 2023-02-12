@@ -79,23 +79,20 @@ class ModelGeometryUpdater {
     });
   }
 
-  updateModelUV(model3D, scaleDir, addScale) {
+  updateModelUV(model3D, scaleDir) {
     model3D.children.forEach((mesh, index) => {
-      this.updateMeshUV(mesh, scaleDir, addScale);
+      this.updateMeshUV(mesh, scaleDir);
     });
   }
 
   updateMeshUV(mesh, scaleDir) {
     class Point {
-      constructor(index, pos, uv, scale, initScale) {
+      constructor(index, pos, uv) {
         this.x = pos[index * 3];
         this.y = pos[index * 3 + 1];
         this.z = pos[index * 3 + 2];
         this.u = uv[index * 2];
         this.v = uv[index * 2 + 1];
-        this.dx = this.x * scale.x - this.x * initScale;
-        this.dy = this.y * scale.y - this.y * initScale;
-        this.dz = this.z * scale.z - this.z * initScale;
       }
     }
 
@@ -125,7 +122,6 @@ class ModelGeometryUpdater {
     }
 
     const initScale = scale.x > 10 ? 100 : 1;
-    const ratioUV = 0.01;
     const limGrad = 10;
     const limRad = (limGrad * Math.PI) / 180;
     const limN = 0.7;
@@ -143,7 +139,7 @@ class ModelGeometryUpdater {
     for (let i = 0; i < index.length; i += 3) {
       let dir = "check dir";
       let axis = null;
-      let delta = null;
+      let sc = null;
 
       const indA = index[i];
       const indB = index[i + 1];
@@ -176,9 +172,9 @@ class ModelGeometryUpdater {
       }
 
       const p = {
-        A: new Point(indA, pos, uvInit, scale, initScale),
-        B: new Point(indB, pos, uvInit, scale, initScale),
-        C: new Point(indC, pos, uvInit, scale, initScale),
+        A: new Point(indA, pos, uvInit),
+        B: new Point(indB, pos, uvInit),
+        C: new Point(indC, pos, uvInit),
       };
 
       const A = new THREE.Vector3(p.A.x, p.A.y, p.A.z);
@@ -230,21 +226,21 @@ class ModelGeometryUpdater {
         }
 
         axis = axisX;
-        delta = "dx";
+        sc = scale.x;
       } else if (scaleDir === "Y") {
         if (Math.abs(plane.normal.y) > limN) {
           continue;
         }
 
         axis = axisY;
-        delta = "dy";
+        sc = scale.y;
       } else if (scaleDir === "Z") {
         if (Math.abs(plane.normal.z) > limN) {
           continue;
         }
 
         axis = axisZ;
-        delta = "dz";
+        sc = scale.z;
       }
 
       const OProj = new THREE.Vector3();
@@ -273,27 +269,18 @@ class ModelGeometryUpdater {
         unknownTriangles += 1;
       }
 
-      if (dir === "UP") {
-        uv.set([p.A.u + p.A[delta] * ratioUV], indA * 2);
-        uv.set([p.B.u + p.B[delta] * ratioUV], indB * 2);
-        uv.set([p.C.u + p.C[delta] * ratioUV], indC * 2);
-      } else if (dir === "UN") {
-        uv.set([p.A.u - p.A[delta] * ratioUV], indA * 2);
-        uv.set([p.B.u - p.B[delta] * ratioUV], indB * 2);
-        uv.set([p.C.u - p.C[delta] * ratioUV], indC * 2);
-      } else if (dir === "VP") {
-        uv.set([p.A.v + p.A[delta] * ratioUV], indA * 2 + 1);
-        uv.set([p.B.v + p.B[delta] * ratioUV], indB * 2 + 1);
-        uv.set([p.C.v + p.C[delta] * ratioUV], indC * 2 + 1);
-      } else if (dir === "VN") {
-        uv.set([p.A.v - p.A[delta] * ratioUV], indA * 2 + 1);
-        uv.set([p.B.v - p.B[delta] * ratioUV], indB * 2 + 1);
-        uv.set([p.C.v - p.C[delta] * ratioUV], indC * 2 + 1);
+      if (dir === "UP" || dir === "UN") {
+        uv.set([(p.A.u * sc) / initScale], indA * 2);
+        uv.set([(p.B.u * sc) / initScale], indB * 2);
+        uv.set([(p.C.u * sc) / initScale], indC * 2);
+      } else if (dir === "VP" || dir === "VN") {
+        uv.set([(p.A.v * sc) / initScale], indA * 2 + 1);
+        uv.set([(p.B.v * sc) / initScale], indB * 2 + 1);
+        uv.set([(p.C.v * sc) / initScale], indC * 2 + 1);
       }
     }
 
     mesh.geometry.attributes.uv.needsUpdate = true;
-
     // console.log(unknownTriangles);
   }
 

@@ -1683,6 +1683,32 @@ const ppp = {
       //   }
       // }
 
-      // -----------------------------------------
+      // ---------------------РОБОЧЕ НА ГІТХАБІ--------------------
 
+      if (dir === "UP") {
+        uv.set([p.A.u + p.A[delta] * ratioUV], indA * 2);
+        uv.set([p.B.u + p.B[delta] * ratioUV], indB * 2);
+        uv.set([p.C.u + p.C[delta] * ratioUV], indC * 2);
+      } else if (dir === "UN") {
+        uv.set([p.A.u - p.A[delta] * ratioUV], indA * 2);
+        uv.set([p.B.u - p.B[delta] * ratioUV], indB * 2);
+        uv.set([p.C.u - p.C[delta] * ratioUV], indC * 2);
+      } else if (dir === "VP") {
+        uv.set([p.A.v + p.A[delta] * ratioUV], indA * 2 + 1);
+        uv.set([p.B.v + p.B[delta] * ratioUV], indB * 2 + 1);
+        uv.set([p.C.v + p.C[delta] * ratioUV], indC * 2 + 1);
+      } else if (dir === "VN") {
+        uv.set([p.A.v - p.A[delta] * ratioUV], indA * 2 + 1);
+        uv.set([p.B.v - p.B[delta] * ratioUV], indB * 2 + 1);
+        uv.set([p.C.v - p.C[delta] * ratioUV], indC * 2 + 1);
+}
       
+ this.dx = this.x * scale.x - this.x * initScale;
+        this.dy = this.y * scale.y - this.y * initScale;
+this.dz = this.z * scale.z - this.z * initScale;
+        
+const p = {
+        A: new Point(indA, pos, uvInit, scale, initScale),
+        B: new Point(indB, pos, uvInit, scale, initScale),
+        C: new Point(indC, pos, uvInit, scale, initScale),
+      };
