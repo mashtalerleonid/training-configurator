@@ -4,6 +4,9 @@ const rangeYEl = document.querySelector("#rangeY");
 const rangeZEl = document.querySelector("#rangeZ");
 const rangeAllEl = document.querySelector("#rangeAll");
 
+const rangeClipPosEl = document.querySelector("#range-clip-pos");
+const rangeClipRotEl = document.querySelector("#range-clip-rot");
+
 const frameImgCont = document.querySelector("#frame-img");
 frameImgCont.addEventListener("click", (e) => {
   const id = e.target.dataset.id;
@@ -59,6 +62,8 @@ let renderer = null;
 let light = null;
 let light1 = null;
 let controls = null;
+
+let clipPlane = null;
 // ----------------------------------
 initScene();
 const model3D = new THREE.Object3D();
@@ -137,6 +142,22 @@ rangeAllEl.addEventListener("input", (e) => {
   renderer.render(scene, camera);
 });
 
+rangeClipPosEl.addEventListener("input", (e) => {
+  const clipPos = 100 - Number(rangeClipPosEl.value);
+  clipPlane.constant = clipPos;
+  render();
+});
+
+rangeClipRotEl.addEventListener("input", (e) => {
+  const clipRotDeg = Number(rangeClipRotEl.value);
+  const clipRotRad = (clipRotDeg * Math.PI) / 180;
+
+  clipPlane.normal.x = Math.cos(clipRotRad);
+  clipPlane.normal.y = -Math.sin(clipRotRad);
+
+  render();
+});
+
 // -------functions
 function initScene() {
   scene = new THREE.Scene();
@@ -189,6 +210,9 @@ function initScene() {
     renderer.render(scene, camera);
   });
   controls.update();
+
+  clipPlane = new THREE.Plane(new THREE.Vector3(1, 0, 0), 0);
+  renderer.clippingPlanes = [clipPlane];
 }
 
 function render() {
@@ -201,7 +225,7 @@ function onNewModelLoaded(model3D) {
   const size = geometryUpdater.getModelSize(model3D);
 
   model3D.children.forEach((mesh, index) => {
-    mesh.geometry = mesh.geometry.toNonIndexed();
+    // mesh.geometry = mesh.geometry.toNonIndexed();
     // mesh.geometry.translate(size.width / 2 + 10, 0, size.depth / 2 + 10);
   });
 

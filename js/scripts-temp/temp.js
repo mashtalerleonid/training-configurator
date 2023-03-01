@@ -1712,3 +1712,106 @@ const p = {
         B: new Point(indB, pos, uvInit, scale, initScale),
         C: new Point(indC, pos, uvInit, scale, initScale),
       };
+
+      R2D.Tool.updateModelUVOLD = function (model3D, scale, addScale) {
+        let isBroken = null;
+        if (
+            Math.round(scale.x * 10) === Math.round(scale.y * 10) &&
+            Math.round(scale.y * 10) === Math.round(scale.z * 10)
+        ) {
+            isBroken = false;
+        } else {
+            isBroken = true;
+        }
+    
+        model3D.children.forEach((mesh) => {
+            updateMeshUV(mesh, scale, addScale, isBroken);
+        });
+    
+        function updateMeshUV(mesh, scale, addScale, isBroken) {
+            if (mesh.material.userData.blockScalingUV) {
+                return;
+            }
+    
+            let ratioUV = null;
+            if (!mesh.userData.ratioUV) {
+                mesh.userData.ratioUV = calcRatioUV(mesh);
+            }
+            ratioUV = mesh.userData.ratioUV;
+            const lim = 0.7;
+            const uv = mesh.geometry.attributes.uv.array;
+            const pos = mesh.geometry.attributes.position.array;
+            const normal = mesh.geometry.attributes.normal.array;
+    
+            if (!isBroken) {
+                const k = (addScale.x + addScale.y + addScale.z) / 3;
+                for (let i = 0; i < pos.length; i += 3) {
+                    const iUV = (i / 3) * 2;
+                    uv.set([uv[iUV] * k, uv[iUV + 1] * k], iUV);
+                }
+                mesh.geometry.attributes.uv.needsUpdate = true;
+                return;
+            }
+    
+            for (let i = 0; i < pos.length; i += 3) {
+                const point = {
+                    x: pos[i],
+                    y: pos[i + 1],
+                    z: pos[i + 2],
+                };
+                const iUV = (i / 3) * 2;
+                const { dx, dy, dz } = calcDelta(point, scale, addScale);
+                const kx = normal[i] > 0 ? 1 : -1;
+                const ky = normal[i + 1] > 0 ? 1 : -1;
+                const kz = normal[i + 2] > 0 ? 1 : -1;
+    
+                if (Math.abs(normal[i]) > lim) {
+                    uv.set([uv[iUV] - kx * dz * ratioUV, uv[iUV + 1] - dy * ratioUV], iUV);
+                } else if (Math.abs(normal[i + 1]) > lim) {
+                    uv.set([uv[iUV] + dx * ratioUV, uv[iUV + 1] + ky * dz * ratioUV], iUV);
+                } else if (Math.abs(normal[i + 2]) > lim) {
+                    uv.set([uv[iUV] + kz * dx * ratioUV, uv[iUV + 1] - dy * ratioUV], iUV);
+                }
+            }
+    
+            mesh.geometry.attributes.uv.needsUpdate = true;
+        }
+    
+        function calcDelta(point, scale, addScale) {
+            return {
+                dx: point.x * scale.x - (point.x * scale.x) / addScale.x,
+                dy: point.y * scale.y - (point.y * scale.y) / addScale.y,
+                dz: point.z * scale.z - (point.z * scale.z) / addScale.z,
+            };
+        }
+    
+        function calcRatioUV(mesh) {
+            const index = mesh.geometry.index.array;
+            const pos = mesh.geometry.attributes.position.array;
+            const uv = mesh.geometry.attributes.uv.array;
+            const indA = index[0];
+            const indB = index[1];
+            const uvA = { u: uv[indA * 2], v: uv[indA * 2 + 1] };
+            const uvB = { u: uv[indB * 2], v: uv[indB * 2 + 1] };
+            const posA = {
+                x: pos[indA * 3],
+                y: pos[indA * 3 + 1],
+                z: pos[indA * 3 + 2],
+            };
+            const posB = {
+                x: pos[indB * 3],
+                y: pos[indB * 3 + 1],
+                z: pos[indB * 3 + 2],
+            };
+            const posDistAB = Math.sqrt(
+                Math.pow(posB.x - posA.x, 2) +
+                    Math.pow(posB.y - posA.y, 2) +
+                    Math.pow(posB.z - posA.z, 2)
+            );
+            const uvDistAB = Math.sqrt(
+                Math.pow(uvB.u - uvA.u, 2) + Math.pow(uvB.v - uvA.v, 2)
+            );
+            const ratioUV = uvDistAB / posDistAB;
+            return ratioUV;
+        }
+    };

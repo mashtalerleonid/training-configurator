@@ -16,7 +16,7 @@ class ModelGeometryUpdater {
       mesh.scale.z = scale * initScale;
     });
 
-    this.updateModelUV(model3D, "All");
+    this.updateModelUV(model3D, addScale);
   }
 
   setWidth(model3D, width) {
@@ -30,7 +30,7 @@ class ModelGeometryUpdater {
 
     this.scaleModel(model3D, addScale);
 
-    this.updateModelUV(model3D, "X");
+    this.updateModelUV(model3D, addScale);
   }
 
   setHeight(model3D, height) {
@@ -44,7 +44,7 @@ class ModelGeometryUpdater {
 
     this.scaleModel(model3D, addScale);
 
-    this.updateModelUV(model3D, "Y");
+    this.updateModelUV(model3D, addScale);
   }
 
   setDepth(model3D, depth) {
@@ -58,7 +58,7 @@ class ModelGeometryUpdater {
 
     this.scaleModel(model3D, addScale);
 
-    this.updateModelUV(model3D, "Z");
+    this.updateModelUV(model3D, addScale);
   }
 
   calcAddScale(model3D, params) {
@@ -79,9 +79,21 @@ class ModelGeometryUpdater {
     });
   }
 
-  updateModelUV(model3D, scaleDir) {
+  updateModelUV(model3D, addScale) {
     model3D.children.forEach((mesh, index) => {
-      this.updateMeshUV(mesh, scaleDir);
+      mesh.geometry = mesh.geometry.toNonIndexed();
+
+      if (addScale.x !== 1) {
+        this.updateMeshUV(mesh, "X");
+      }
+
+      if (addScale.y !== 1) {
+        this.updateMeshUV(mesh, "Y");
+      }
+
+      if (addScale.z !== 1) {
+        this.updateMeshUV(mesh, "Z");
+      }
     });
   }
 
