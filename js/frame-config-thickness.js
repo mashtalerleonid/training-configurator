@@ -44,7 +44,7 @@ let frontUpdater = null;
 let backUpdater = null;
 
 const materialLoader = new MaterialLoader();
-materialLoader.frameMaterialIds = ["32729", "32611", "738", "2053"];
+materialLoader.frameMaterialIds = ["32729", "32611", "738", "2053", "386", "108", "109"];
 materialLoader.frontMaterialIds = ["32506", "774"];
 materialLoader.backMaterialIds = ["32716"];
 materialLoader.lampMaterialIds = ["1555"];
