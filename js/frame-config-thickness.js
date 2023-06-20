@@ -8,10 +8,11 @@ const frameImgCont = document.querySelector("#frame-img");
 frameImgCont.addEventListener("click", (e) => {
   const id = e.target.dataset.id;
   materialLoader.setMaterialOnMesh(frameMesh, id);
+  // materialLoader.setMaterialOnAllMeshes(model3D, id);
 });
 
 const loaderCubeText = new THREE.CubeTextureLoader();
-const loaderGLTF = new THREE.GLTFLoader();
+const loaderGLTF = new GLTFLoader();
 const loaderTexture = new THREE.TextureLoader();
 
 loaderCubeText.setPath("./images/textures/metal/");
@@ -187,7 +188,7 @@ function initScene() {
   scene.add(rightLight);
   scene.add(ambientLight);
 
-  controls = new THREE.OrbitControls(camera, canvas);
+  controls = new OrbitControls(camera, canvas);
   controls.target.set(0, 70, 0);
   controls.addEventListener("change", () => {
     renderer.render(scene, camera);

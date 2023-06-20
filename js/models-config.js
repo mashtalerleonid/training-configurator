@@ -42,7 +42,7 @@ modelsCont.addEventListener("click", (e) => {
 });
 
 const loaderCubeText = new THREE.CubeTextureLoader();
-const loaderGLTF = new THREE.GLTFLoader();
+const loaderGLTF = new GLTFLoader();
 const loaderTexture = new THREE.TextureLoader();
 
 loaderCubeText.setPath("./images/textures/metal/");
@@ -204,7 +204,7 @@ function initScene() {
   scene.add(rightLight);
   scene.add(ambientLight);
 
-  controls = new THREE.OrbitControls(camera, canvas);
+  controls = new OrbitControls(camera, canvas);
   // controls.target.set(0, 70, 0);
   controls.addEventListener("change", () => {
     renderer.render(scene, camera);
