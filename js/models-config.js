@@ -41,6 +41,8 @@ modelsCont.addEventListener("click", (e) => {
   // );
 });
 
+console.log("models-config.js");
+
 const loaderCubeText = new THREE.CubeTextureLoader();
 const loaderGLTF = new GLTFLoader();
 const loaderTexture = new THREE.TextureLoader();
