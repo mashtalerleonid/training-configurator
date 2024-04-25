@@ -1,0 +1,82 @@
+{
+    "model": {
+        "title": "Super bed",
+        "modelsForReplace": []
+    },
+    "geometries": [
+        {
+            "geometryIndex": 0,
+            "title": "Mattresses",
+            "modelsForReplace": [
+                {
+                    "id": "33413",
+                    "imgSrc": "",
+                    "title": "Mattress 1",
+                    "text": "Standard type"
+                },
+                {
+                    "id": "33414",
+                    "title": "Mattress 2",
+                    "text": "Orthopedic"
+                }
+            ],
+            "defaultId": "33413"
+        },
+        {
+            "geometryIndex": 1,
+            "title": "Carcasses",
+            "modelsForReplace": [
+                {
+                    "id": "33125",
+                    "title": "Carcass 1",
+                    "text": "Width: 160 cm, Length: 200 cm, Height: 20 cm"
+                },
+                {
+                    "id": "33129",
+                    "title": "Carcass 2",
+                    "text": "Width: 160 cm, Length: 200 cm, Height: 10 cm"
+                }
+            ],
+            "defaultId": "33125"
+        },
+        {
+            "geometryIndex": 2,
+            "title": "Legs",
+            "modelsForReplace": [
+                {
+                    "id": "0",
+                    "title": "No legs",
+                    "text": ""
+                },
+                {
+                    "id": "33124",
+                    "title": "Legs 1",
+                    "text": "Height: 10 cm"
+                },
+                {
+                    "id": "33128",
+                    "title": "Legs 2",
+                    "text": "Height: 5 cm"
+                }
+            ],
+            "defaultId": "33124"
+        },
+        {
+            "geometryIndex": 3,
+            "title": "Select pillow",
+            "modelsForReplace": [
+                {
+                    "id": "0",
+                    "title": "No pillow",
+                    "text": ""
+                },
+                {
+                    "id": "33127",
+                    "title": "Pillow 1",
+                    "text": "60 cm x 30 cm"
+                }
+            ],
+            "defaultId": "33127"
+        }
+    ]
+}

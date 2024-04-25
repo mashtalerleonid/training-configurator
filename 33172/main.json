@@ -1,0 +1,28 @@
+{
+    "model": {
+        "title": "Bottom cabinet series A",
+        "modelsForReplace": [
+            {
+                "id": "33172",
+                "title": "First cabinet with id = 33172",
+                "text": "Some additional info"
+            },
+            {
+                "id": "3118",
+                "title": "Second cabinet with id = 3118",
+                "text": "Some additional info"
+            },
+            {
+                "id": "3120",
+                "title": "Third cabinet with id = 3120",
+                "text": "Some additional info"
+            },
+            {
+                "id": "3114",
+                "title": "Fourth cabinet with id = 3114",
+                "text": "Some additional info"
+            }
+        ]
+    },
+    "geometries": []
+}

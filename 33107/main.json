@@ -1,0 +1,62 @@
+{
+    "model": {
+        "title": "Chairs",
+        "modelsForReplace": []
+    },
+    "geometries": [
+        {
+            "geometryIndex": 0,
+            "title": "Seatttt",
+            "modelsForReplace": [
+                {
+                    "id": "33116",
+                    "title": "Rounded seat",
+                    "text": "20 cm x 20 cm"
+                },
+                {
+                    "id": "33112",
+                    "title": "Modern seat",
+                    "text": "30 cm x 20 cm"
+                },
+                {
+                    "id": "33110",
+                    "title": "Designer seat",
+                    "text": "20 cm x 30 cm"
+                },
+                {
+                    "id": "33108",
+                    "title": "Technic seat",
+                    "text": "30 cm x 30 cm"
+                }
+            ],
+            "defaultId": "33108"
+        },
+        {
+            "geometryIndex": 1,
+            "title": "Legs",
+            "modelsForReplace": [
+                {
+                    "id": "33115",
+                    "title": "Legs type 1",
+                    "text": "Modern"
+                },
+                {
+                    "id": "33113",
+                    "title": "Legs type 2",
+                    "text": "Vintage"
+                },
+                {
+                    "id": "33111",
+                    "title": "Legs type 3",
+                    "text": "Hi-tech"
+                },
+                {
+                    "id": "33109",
+                    "title": "Legs type 4",
+                    "text": "Designed"
+                }
+            ],
+            "defaultId": "33109"
+        }
+    ]
+}

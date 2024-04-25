@@ -1,0 +1,34 @@
+{
+    "model": { "title": "Tables", "modelsForReplace": [] },
+    "geometries": [
+        {
+            "geometryIndex": 0,
+            "title": "Legs",
+            "modelsForReplace": [
+                {
+                    "id": "33160",
+                    "title": "Leg type 1",
+                    "text": "60 cm"
+                }
+            ],
+            "defaultId": "33160"
+        },
+        {
+            "geometryIndex": 1,
+            "title": "Top",
+            "modelsForReplace": [
+                {
+                    "id": "33162",
+                    "title": "Square",
+                    "text": "Some text"
+                },
+                {
+                    "id": "33161",
+                    "title": "Round",
+                    "text": "Some text"
+                }
+            ],
+            "defaultId": "33162"
+        }
+    ]
+}
