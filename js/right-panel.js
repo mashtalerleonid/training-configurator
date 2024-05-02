@@ -273,14 +273,19 @@ function slide({ elHide, elShow, navTitle = "", side = "to-left", isBackBtn = fa
 }
 
 async function renderSettingsContainer(side = "to-left") {
-    if (!configurator.isPlanner) {
+    settingsContainerEl.innerHTML = "";
+    propListEl.innerHTML = "";
+
+    if (configurator.isPlanner) {
         plannerBtnsContainer.classList.remove("hidden");
     } else {
         copyBtn.classList.remove("hidden");
     }
 
-    settingsContainerEl.innerHTML = "";
-    propListEl.innerHTML = "";
+    if (configurator.sceneObject.isParametric) {
+        settingsContainerEl.append(changeSizeWr);
+        changeSizeWr.classList.remove("hidden");
+    }
 
     // заміна цілої моделі
     if (configurator.modelData?.modelsForReplace.length > 0) {
@@ -288,7 +293,9 @@ async function renderSettingsContainer(side = "to-left") {
     }
     // заміна мешей
     Object.entries(configurator.meshesData).forEach(([hash, data]) => {
-        propListEl.append(getPropItemEl(data, hash));
+        if (data.modelsForReplace?.length) {
+            propListEl.append(getPropItemEl(data, hash));
+        }
     });
     settingsContainerEl.append(propListEl);
     //

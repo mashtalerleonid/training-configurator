@@ -136,4 +136,12 @@ class PlannerHelper {
     disposeRenderers() {
         R2D.sharedRenderer.disposeWebGLRenderers();
     }
+
+    configurateParametric() {
+        R2D.Tool.ps.configurate(this.configurator.objectViewer3D);
+    }
+
+    clearParametricScaler() {
+        R2D.Tool.ps.clear();
+    }
 }

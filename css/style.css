@@ -310,6 +310,153 @@ img {
     transition: all ease-in-out 200ms;
 }
 
+/* ------------change size-------------- */
+
+.changeSizeWr {
+    width: 230px;
+    margin-left: auto;
+    margin-right: auto;
+
+    display: grid;
+    grid-template-columns: auto 27px;
+    grid-gap: 24px;
+    margin-bottom: 30px;
+    padding-right: 10px;
+}
+
+.changerMain {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 30px;
+}
+
+.changerInputs {
+    display: flex;
+    text-align: center;
+    align-items: center;
+}
+
+.text {
+    font-size: 13px;
+    color: rgb(68, 68, 68);
+    user-select: none;
+}
+
+.input {
+    outline: none;
+    border: none;
+    padding: 3px 0;
+    margin: 0 8px 0 4px;
+    width: 40px;
+    text-align: center;
+    color: rgb(68, 68, 68);
+    &::-webkit-inner-spin-button {
+        display: none;
+    }
+    &:hover {
+        background-color: rgb(244, 244, 244);
+    }
+    &:focus {
+        color: rgb(47, 47, 47);
+        outline: rgb(54, 54, 54) solid 1px;
+        background-color: rgb(244, 244, 244);
+        cursor: auto;
+    }
+}
+
+.changerMain_bottom {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.arrows {
+    display: grid;
+}
+
+.arrowUp {
+    transform: rotate(90deg);
+    cursor: pointer;
+    & path {
+        transition: all 0.9s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+    &:hover {
+        & path {
+            fill: #ffcc00;
+        }
+    }
+}
+
+.arrowDown {
+    transform: rotate(-90deg);
+    cursor: pointer;
+    & path {
+        transition: all 0.9s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+    &:hover {
+        & path {
+            fill: #ffcc00;
+        }
+    }
+}
+
+.changeSizesLockWr {
+    position: relative;
+    height: 94px;
+    display: grid;
+    padding-top: 13px;
+}
+
+.changeSizesLockLine1 {
+    width: 100%;
+    height: 11px;
+    border-top: 1px solid;
+    border-right: 1px solid;
+}
+
+.changeSizesLockLine2 {
+    border-top: 1px solid;
+    width: 13px;
+}
+
+.changeSizesLockLine3 {
+    width: 100%;
+    height: 11px;
+    border-bottom: 1px solid #444444;
+    border-right: 1px solid #444444;
+}
+
+.lock_main {
+    position: absolute;
+    right: -7px;
+    top: 31px;
+    cursor: pointer;
+    & svg {
+        width: 16px;
+    }
+}
+
+.lock_main_hover {
+    position: absolute;
+    background: #81e7ff;
+    display: none;
+    font-size: 12px;
+    width: max-content;
+    padding: 2px 7px;
+    transition: all 0.1s ease;
+    user-select: none;
+}
+
+.lock_main_overlay {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+
 /* ----------cur materials------------ */
 
 .materials__list {

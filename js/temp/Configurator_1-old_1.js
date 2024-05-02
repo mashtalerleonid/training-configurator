@@ -2,6 +2,7 @@ class Configurator_1 {
     constructor(plannerContainer, R2D) {
         this.configId = "1";
         this.configType = "";
+        // this.openingType = "";
 
         this.modelData = null;
         this.meshesData = {};
@@ -12,6 +13,7 @@ class Configurator_1 {
         this.meshesContainer = new THREE.Object3D();
         this.meshesArr = [];
         this.isFewMeshesSelected = false;
+        this.hashesByIndex = [];
         this.removedMeshes = [];
         this.newMeshHash = "";
         this.newMeshId = "";
@@ -67,8 +69,10 @@ class Configurator_1 {
 
     async getMatDataForMarkup() {
         const matData = [];
+        // const materialsData = this.sceneObject.getMaterials();
         const materialsData = this.sceneObject.isParametric
             ? this.sceneObject.getMaterials(true)
+            // ? this.getMaterialsForRightPanel()
             : this.getMaterialsForRightPanel();
 
         for (let i = 0; i < materialsData.length; i++) {
@@ -151,30 +155,7 @@ class Configurator_1 {
         }
 
         this.PH.placeModel(idToPlace, settings, () => {
-            this.sceneObject.width = configInfo.params.width;
-            this.sceneObject.height = configInfo.params.height;
-            this.sceneObject.depth = configInfo.params.depth;
-
-            curParams = {
-                width: this.sceneObject.width,
-                height: this.sceneObject.height,
-                depth: this.sceneObject.depth,
-                elevation: this.sceneObject.objectData.property.position.y,
-            }
-
-            widthInp.value = curParams.width;
-            heightInp.value = curParams.height;
-            depthInp.value = curParams.depth;
-            elevationInp.value = curParams.elevation;
-
-
-            if (Object.keys(configInfo).every((key) => key == "params")) {
-                this.configInfo = null;
-            } else {
-                this.configInfo = configInfo;
-                this.sceneObject.configInfo = configInfo;
-            }
-
+            this.configInfo = configInfo;
             this.startConfigurate(this.startModelId);
         });
     }
@@ -190,97 +171,48 @@ class Configurator_1 {
 
         let allPossibleProductIds = [];
 
-        if (this.configData.geometries?.length > 0 || this.sceneObject.isParametric) {
+        if (this.configData.geometries?.length > 0) {
             // заміна мешей
             this.configType = "meshReplace";
+            // this.initMaterials = this.sceneObject.getMaterialsObjects().map((mo) => ({ ...mo }));
+            console.log({ ...this.initMaterials });
+            this.configData.geometries.forEach((data) => {
+                const hash = this.initMaterials[data.geometryIndex].hash;
+                
+                this.meshesData[hash] = { ...data };
+                this.meshesData[hash].curId =
+                    this.configInfo?.meshesData[hash]?.curId || this.meshesData[hash].defaultId;
+                if (this.meshesData[hash].modelsForReplace.some((data) => data.id == 0)) {
+                    this.meshesData[hash].exists = true;
+                }
+                this.meshesData[hash].childrenPos = [];
+                this.queue[this.meshesData[hash].curId] = true;
 
-            const allCopyIndexes = this.configData.geometries.flatMap(
-                (data) => data.copyIndexes || []
-            );
+                // --------------------
 
-            this.initMaterials.forEach((matData, index) => {
-                let data = null;
-                const hash = matData.hash;
-                const dataFromConfig = this.configData.geometries.find(
-                    (data) => data.geometryIndex === index
-                );
-                const copyIndexes = dataFromConfig?.copyIndexes;
-
-                if (dataFromConfig) {
-                    data = dataFromConfig;
-
-                    this.meshesData[hash] = { ...data };
-                    this.meshesData[hash].curId =
-                        this.configInfo?.meshesData[hash]?.curId || this.meshesData[hash].defaultId;
-                    if (this.meshesData[hash].modelsForReplace.some((data) => data.id == 0)) {
-                        this.meshesData[hash].exists = true;
-                    }
-                    this.meshesData[hash].childrenPos = [];
-                    this.queue[this.meshesData[hash].curId] = true;
-
-                    // ----- check copy indexes -----
-                    if (copyIndexes) {
-                        this.meshesData[hash].copyIndexes = copyIndexes;
-                        this.meshesData[hash].copiesHashes = copyIndexes.map(
-                            (index) => this.initMaterials[index].hash
-                        );
-                        copyIndexes.forEach((index) => {
-                            const hashCopy = this.initMaterials[index].hash;
-                            this.meshesData[hashCopy] = { geometryIndex: index };
-                            this.meshesData[hashCopy].curId =
-                                this.configInfo?.meshesData[hash]?.curId ||
-                                this.meshesData[hash].defaultId;
-                            this.meshesData[hashCopy].childrenPos = [];
-                        });
-                    }
-                    // -----
-                } else if (!allCopyIndexes.includes(index)) {
-                    //немає інфи в конфігурації і не для копіювання, тобто не буде проходити через replaceMesh
-                    this.meshesData[hash] = {};
-                    this.meshesData[hash].curId = -1;
-                    this.meshesData[hash].childrenPos = [];
-                    this.meshesData[hash].geometryIndex = index;
-
-                    const mesh = this.getMeshByHash(hash);
-                    const keys = Object.keys(mesh.userData);
-                    const hasPos = keys.some((key) => key.startsWith("childPos"));
-
-                    if (hasPos) {
+                if (data.copyIndexes) {
+                    this.meshesData[hash].copyIndexes = data.copyIndexes;
+                    data.copyIndexes.forEach((index) => {
+                        const hashCopy = this.initMaterials[index].hash;
+                        this.meshesData[hashCopy] = { geometryIndex: index };
+                        this.meshesData[hashCopy].curId =
+                            this.configInfo?.meshesData[hash]?.curId ||
+                            this.meshesData[hash].defaultId;
                         this.meshesData[hash].childrenPos = [];
-
-                        for (const key in mesh.userData) {
-                            if (key.startsWith("childPos")) {
-                                const indexFromKey = key.split("_")[1];
-                                const data = {
-                                    childHash: this.initMaterials[indexFromKey].hash,
-                                    childPos: mesh.userData[key],
-                                };
-                                this.meshesData[hash].childrenPos.push(data);
-                            }
-                        }
-                    }
+                    });
                 }
             });
-
             allPossibleProductIds = this.configData.geometries
                 .flatMap((data) => {
                     const res = data.modelsForReplace.map((data) => data.id);
                     return res.length ? res : data.defaultId;
                 })
                 .filter((id) => id != 0);
+                console.log(allPossibleProductIds);
 
             this.idsForLoad = Object.values(this.meshesData)
                 .map((meshData) => meshData.curId)
-                .filter((id) => id != 0 && id != -1);
-
-            this.idsForLoad = [...new Set(this.idsForLoad)];
-
-            if (!this.idsForLoad.length) {
-                this.sceneObject.update();
-                if (this.sceneObject.isParametric) {
-                    this.PH.configurateParametric();
-                }
-            }
+                .filter((id) => !!id);
         } else {
             // заміна моделей
             this.configType = "modelReplace";
@@ -296,7 +228,7 @@ class Configurator_1 {
             this.sceneObject.update();
 
             allPossibleProductIds = this.modelData.modelsForReplace.map((data) => data.id);
-        } 
+        }
 
         this.productsDataLoader.addEventListener(
             Event.COMPLETE,
@@ -320,20 +252,22 @@ class Configurator_1 {
             R2D.Pool.getProductData(modelId) || (await this.loadProductData(modelId));
         const metaZipSrc = `${R2D.URL.DOMAIN}${objectData.source.body.metaZip}`;
 
-        const response = await fetch(metaZipSrc);
-        const data = await response.blob();
-        const zip = await JSZip.loadAsync(data);
-        const json = await zip.files["main.json"].async("string");
+        // const response = await fetch(metaZipSrc);
+        // const data = await response.blob();
+        // const zip = await JSZip.loadAsync(data);
+        // const json = await zip.files["main.json"].async("string");
 
         let obj = null;
-        try {
-            obj = JSON.parse(json);
-        } catch (error) {
-            console.log(error);
-        }
+        // try {
+        //     obj = JSON.parse(json);
+        // } catch (error) {
+        //     console.log(error);
+        // }
 
-        // const jsonFile = await fetch("../33123/main.json");
-        // obj = await jsonFile.json();
+        const jsonFile = await fetch("../33415/main.json");
+        console.log(jsonFile);
+        obj = await jsonFile.json();
+        console.log(obj);
 
         return obj;
     }
@@ -370,8 +304,6 @@ class Configurator_1 {
 
         R2D.Pool3D.removeEventListener(Event.FINISH, this.init3DLoadedListener);
 
-        this.findOwnPos();
-
         if (this.configInfo) {
             const hashesFromConfigInfo = Object.keys(this.configInfo.meshesData);
             for (const hash in this.meshesData) {
@@ -389,8 +321,6 @@ class Configurator_1 {
             }
         }
 
-        this.findParents();
-
         this.sceneObject.update();
 
         this.updateAllMeshes();
@@ -403,6 +333,7 @@ class Configurator_1 {
     }
 
     startReplaceMesh(id, hash) {
+        console.log("startReplaceMesh", id, hash);
         this.newMeshId = id;
         this.newMeshHash = hash;
 
@@ -422,34 +353,27 @@ class Configurator_1 {
         R2D.Pool3D.removeEventListener(Event.FINISH, this.forReplace3DLoadedListener);
         this.replaceMesh(this.newMeshId, this.newMeshHash);
 
-        // ----- check copy indexes -----
-        const configData = this.getConfigDataByHash(this.newMeshHash);
-        if (configData?.copyIndexes) {
-            configData.copyIndexes.forEach((copyIndex) => {
+        const index = this.initMaterials.findIndex((mo) => mo.hash === this.newMeshHash);
+        if (this.configData.geometries[index]?.copyIndexes) {
+            this.configData.geometries[index]?.copyIndexes.forEach((copyIndex) => {
                 this.replaceMesh(this.newMeshId, this.initMaterials[copyIndex].hash);
             });
         }
-        // -----
 
         this.updateAllMeshes();
     }
 
     replaceMesh(newMeshId, meshHash) {
-        if (newMeshId == -1) return;
-
         let mesh = null;
-        let curMeshData = null;
-        let curMesh = null;
-
-        curMeshData = this.meshesData[meshHash];
-        curMesh = this.getMeshByHash(meshHash);
 
         R2D.Pool3D.getData(newMeshId).scene.traverse(function (obj) {
             if (obj.type == "Mesh") {
                 mesh = obj.clone();
-                mesh.geometry = obj.geometry.clone();
             }
         });
+
+        const curMeshData = this.meshesData[meshHash];
+        let curMesh = this.getMeshByHash(meshHash);
 
         if (curMesh) {
             this.model3d.remove(curMesh);
@@ -480,6 +404,7 @@ class Configurator_1 {
                 if (key.startsWith("childPos")) {
                     const indexFromKey = key.split("_")[1];
                     const data = {
+                        // childHash: this.hashesByIndex[indexFromKey],
                         childHash: this.initMaterials[indexFromKey].hash,
                         childPos: mesh.userData[key],
                     };
@@ -488,10 +413,6 @@ class Configurator_1 {
             }
         }
         this.model3d.add(mesh);
-
-        this.sceneObject.configInfo = this.createConfigInfo();
-
-        this.findParents();
     }
 
     replaceModel(newModelId) {
@@ -521,36 +442,14 @@ class Configurator_1 {
     updateAllMeshes() {
         this.protector = 0;
 
-        if (this.sceneObject.isParametric) {
-            this.PH.clearParametricScaler();
-        }
-
         this.model3d.children.forEach((mesh) => {
             mesh.position.set(0, 0, 0);
         });
 
-        Object.entries(this.meshesData).forEach(([hash, meshData]) => {
-            if (!meshData.childrenPos) return;
+        Object.values(this.meshesData).forEach((meshData) => {
+            if (!meshData.childrenPos || meshData.childrenPos.length === 0) return;
 
             if (meshData.hasOwnProperty("exists") && !meshData.exists) return;
-
-            if (meshData.parentHash && meshData.curId == -1) {
-                // меш має parent, не замінюється
-                this.setGeometryToOrigin(this.getMeshByHash(hash).geometry);
-            }
-
-            if (
-                this.sceneObject.isParametric &&
-                !meshData.parentHash &&
-                meshData.childrenPos.length == 0 &&
-                meshData.curId != -1
-            ) {
-                // меш не має parent i children, замінюється (для параметричних)
-                const mesh = this.getMeshByHash(hash);
-                if (!mesh) return;
-                mesh.geometry.translate(meshData.ownPos.x, meshData.ownPos.y, meshData.ownPos.z);
-                mesh.geometry.needsUpdate = true;
-            }
 
             meshData.childrenPos.forEach((data) => {
                 const child = this.getMeshByHash(data.childHash);
@@ -565,10 +464,6 @@ class Configurator_1 {
                 this.updatePosDependChildren(data.childHash, child);
             });
         });
-
-        if (this.sceneObject.isParametric) {
-            this.PH.configurateParametric();
-        }
 
         this.PH.render();
     }
@@ -616,22 +511,29 @@ class Configurator_1 {
         if (!mesh) return;
 
         const sceneObjectMaterials = this.sceneObject.getMaterialsObjects();
+        // const sceneObjectMaterials = this.initMaterials;
         const oldIndex = sceneObjectMaterials.findIndex((mo) => mo.hash === hash);
         const scObjMatDeletedData = sceneObjectMaterials.splice(oldIndex, 1)[0];
+        // const scObjMatDeletedData = [...sceneObjectMaterials].splice(oldIndex, 1)[0];
 
         this.removedMeshes.push({ hash, mesh, scObjMatDeletedData, oldIndex });
         this.model3d.remove(mesh);
         this.meshesData[hash].exists = false;
         this.meshesData[hash].curId = 0;
 
-        // ----- check copy indexes -----
-        const configData = this.getConfigDataByHash(hash);
+        // const index = this.materials.findIndex((mo) => mo.hash === hash);
+        console.log("....................");
+        console.log(oldIndex);
+        console.log(this.configData.geometries[oldIndex]);
 
-        if (configData?.copyIndexes) {
-            configData.copyIndexes.forEach((copyIndex) => {
+        const index = this.initMaterials.findIndex((mo) => mo.hash === hash);
+        if (this.configData.geometries[index]?.copyIndexes) {
+            this.configData.geometries[index].copyIndexes.forEach((copyIndex) => {
+                console.log("copyIndex", copyIndex);
                 const hashCopy = this.initMaterials[copyIndex].hash;
                 const mesh = this.getMeshByHash(hashCopy);
 
+                // const sceneObjectMaterials1 = this.sceneObject.getMaterialsObjects();
                 const oldIndex1 = sceneObjectMaterials.findIndex((mo) => mo.hash === hashCopy);
                 const scObjMatDeletedData = sceneObjectMaterials.splice(oldIndex1, 1)[0];
                 this.removedMeshes.push({
@@ -645,49 +547,98 @@ class Configurator_1 {
                 this.meshesData[hashCopy].curId = 0;
             });
         }
-        // -----
     }
 
     setMaterialAt(hash, materialId, type) {
+        // R2D.Tool.ps.setMaterialAt(scope, index, materialId, "current");
+        const index = this.initMaterials.findIndex((mo) => mo.hash === hash);
+
         if (this.sceneObject.isParametric) {
-            const materials = R2D.Tool.ps.getMaterialsForRightPanel(this.sceneObject);
-            const index = materials.findIndex((mo) => mo.hash === hash);
+            const materials = this.getMaterialsForRightPanel();
+            const material = materials[index];
+            const matInfo = R2D.Tool.ps.getInitModelData(this.sceneObject.productId).materialInfo;
+            let needIndex = 0;
 
-            this.sceneObject.setMaterialAt(index, materialId);
-        } else {
-            const materials = this.sceneObject.getMaterialsObjects();
-            const material = materials.find((mo) => mo.hash === hash);
-            if (material) material[type] = materialId;
-
-            // ----- check copy indexes -----
-            const configData = this.getConfigDataByHash(hash);
-            if (configData?.copyIndexes) {
-                configData.copyIndexes.forEach((copyIndex) => {
-                    const hashCopy = this.initMaterials[copyIndex].hash;
-                    const copyMaterial = materials.find((mo) => mo.hash === hashCopy);
-                    if (copyMaterial) copyMaterial[type] = materialId;
-                });
+            for (const groupIndex in matInfo) {
+                const hashes = matInfo[groupIndex];
+                if (hashes.includes(material.hash)) {
+                    needIndex = groupIndex;
+                }
             }
-            // -----
+
+            const hashes = matInfo[needIndex];
+            const materialsObjects = this.sceneObject.getMaterialsObjects();
+            hashes.forEach((hash) => {
+                const material = materialsObjects.find((mo) => mo.hash === hash);
+                if (material) material[type] = materialId;
+            });
+
+            this.sceneObject.update();
+
+            return;
+        }
+
+        const materials = this.sceneObject.getMaterialsObjects();
+        const material = materials.find((mo) => mo.hash === hash);
+        if (material) material[type] = materialId;
+
+        // const index = materials.findIndex((mo) => mo.hash === hash);
+        // const index = this.initMaterials.findIndex((mo) => mo.hash === hash);
+        if (this.configData.geometries[index]?.copyIndexes) {
+            this.configData.geometries[index].copyIndexes.forEach((copyIndex) => {
+                const hashCopy = this.initMaterials[copyIndex].hash;
+                const copyMaterial = materials.find((mo) => mo.hash === hashCopy);
+                if (copyMaterial) copyMaterial[type] = materialId;
+            });
         }
 
         this.sceneObject.update();
     }
+
+    // setMaterialAtParametric(sceneObject, index, materialId, type) {
+    //     const materials = this.getMaterialsForRightPanel(sceneObject);
+    //     const material = materials[index];
+    //     const matInfo = this.getInitModelData(sceneObject.productId).materialInfo;
+    //     let needIndex = 0;
+
+    //     for (const groupIndex in matInfo) {
+    //         const hashes = matInfo[groupIndex];
+    //         if (hashes.includes(material.hash)) {
+    //             needIndex = groupIndex;
+    //         }
+    //     }
+
+    //     const hashes = matInfo[needIndex];
+    //     const materialsObjects = sceneObject.getMaterialsObjects();
+    //     hashes.forEach((hash) => {
+    //         const material = materialsObjects.find((mo) => mo.hash === hash);
+    //         if (material) material[type] = materialId;
+    //     });
+    // }
 
     getMaterialsForRightPanel() {
         const materialsFromSceneObject = this.sceneObject.getMaterials();
 
         const allCopyIndexes = this.configData.geometries.flatMap((data) => data.copyIndexes || []);
         const allCopyHashes = allCopyIndexes.map((index) => this.initMaterials[index].hash);
+        console.log(allCopyIndexes);
+
+        // const matInfo = this.getInitModelData(sceneObject.productId).materialInfo;
 
         const materials = [];
 
         materialsFromSceneObject.forEach((material) => {
-            if (!allCopyHashes.includes(material.hash)) {
-                materials.push(material);
-            }
+            const hash = material.hash;
+            if (allCopyHashes.includes(hash)) return;
+
+            materials.push(material);
         });
 
+        // for (const groupIndex in matInfo) {
+        //     const hash = matInfo[groupIndex][0];
+        //     const material = materialsFromSceneObject.find((mat) => mat.hash === hash);
+        //     if (material) materials.push(material);
+        // }
         return materials;
     }
 
@@ -699,20 +650,23 @@ class Configurator_1 {
         this.sceneObject.update();
     }
 
+    // isAnyMaeshWithCopyIndexes() {
+    //     return this.configData.geometries.some((data) => data.copyIndexes);
+    // }
+
     setMeshActive(hash) {
         if (R2D.mouseInteractionHelper.setActiveMesh) {
             const currentMesh = this.objectViewer3D.getMeshByHash(hash);
             if (!currentMesh) return;
 
-            const configData = this.getConfigDataByHash(hash);
+            const index = this.initMaterials.findIndex((mo) => mo.hash === hash);
+            const copyIndexes = this.configData.geometries[index]?.copyIndexes;
 
-            if (configData?.copyIndexes) {
+            if (copyIndexes) {
                 if (R2D.scene.currentMesh) R2D.mouseInteractionHelper.unsetActiveMesh();
 
                 this.isFewMeshesSelected = true;
-                const hashesArr = configData.copyIndexes.map(
-                    (index) => this.initMaterials[index].hash
-                );
+                const hashesArr = copyIndexes.map((index) => this.initMaterials[index].hash);
                 hashesArr.push(hash);
                 this.meshesArr = hashesArr.map((hash) => this.objectViewer3D.getMeshByHash(hash));
                 this.objectViewer3D.object3d.add(this.meshesContainer);
@@ -748,63 +702,37 @@ class Configurator_1 {
         }
     }
 
-    setGeometryToOrigin(geometry) {
-        if (!geometry.boundingBox) {
-            geometry.computeBoundingBox();
-        }
-
-        const bbox = geometry.boundingBox;
-        const dx = -(bbox.max.x + bbox.min.x) / 2;
-        const dy = -bbox.min.y;
-        const dz = -(bbox.max.z + bbox.min.z) / 2;
-
-        geometry.translate(dx, dy, dz);
-        geometry.needsUpdate = true;
-    }
-
-    getConfigDataByHash(hash) {
-        const index = this.initMaterials.findIndex((mo) => mo.hash === hash);
-        return this.configData.geometries.find((data) => data.geometryIndex === index);
-    }
-
-    findParents() {
-        Object.entries(this.meshesData).forEach(([hash, meshData]) => {
-            delete meshData.parentHash;
-        });
-
-        Object.entries(this.meshesData).forEach(([hash, meshData]) => {
-
-            if (!meshData.childrenPos) return;
-
-            meshData.childrenPos.forEach((data) => {
-                const childHash = data.childHash;
-                this.meshesData[childHash].parentHash = hash;
-            });
-        });
-    }
-
-    findOwnPos() {
-        Object.entries(this.meshesData).forEach(([hash, meshData]) => {
-            const geometry = this.getMeshByHash(hash)?.geometry;
-
-            if (geometry) {
-                if (!geometry.boundingBox) {
-                    geometry.computeBoundingBox();
-                }
-    
-                const bbox = geometry.boundingBox;
-                const x = (bbox.max.x + bbox.min.x) / 2;
-                const y = bbox.min.y;
-                const z = (bbox.max.z + bbox.min.z) / 2;
-                meshData.ownPos = { x, y, z };
-            }
-        });
-    }
-
     copyModelToGlobalClipboard() {
         console.log("copyModelToGlobalClipboard");
+        const configInfo = {
+            configId: this.configId,
+            startModelId: this.startModelId,
+            materials: this.sceneObject.getMaterialsObjects(),
+            configType: this.configType,
+        };
 
-        this.sceneObject.configInfo = this.createConfigInfo();
+        if (this.configType === "modelReplace") {
+            configInfo.modelData = {
+                curId: this.modelData.curId,
+            };
+        }
+        if (this.configType === "meshReplace") {
+            configInfo.meshesData = {};
+
+            this.model3d.children.forEach((mesh, index) => {
+                const hash = mesh.userData.md5;
+
+                configInfo.meshesData[hash] = {
+                    curId: this.meshesData[hash].curId,
+                    pos: mesh.position,
+                    possibleIds: this.meshesData[hash].modelsForReplace
+                        .map((data) => data.id)
+                        .filter((id) => id != 0),
+                };
+            });
+        }
+
+        this.sceneObject.configInfo = configInfo;
         const dataModel = R2D.Scene.makeSceneObjectData(this.sceneObject);
         dataModel.y = 0;
 
@@ -827,10 +755,38 @@ class Configurator_1 {
     }
 
     insertToPlanner() {
+        const configInfo = {
+            configId: this.configId,
+            startModelId: this.startModelId,
+            materials: this.sceneObject.getMaterialsObjects(),
+            configType: this.configType,
+        };
+
+        if (this.configType === "modelReplace") {
+            configInfo.modelData = {
+                curId: this.modelData.curId,
+            };
+        }
+        if (this.configType === "meshReplace") {
+            configInfo.meshesData = {};
+
+            this.model3d.children.forEach((mesh, index) => {
+                const hash = mesh.userData.md5;
+
+                configInfo.meshesData[hash] = {
+                    curId: this.meshesData[hash].curId,
+                    pos: mesh.position,
+                    possibleIds: this.meshesData[hash].modelsForReplace
+                        .map((data) => data.id)
+                        .filter((id) => id != 0),
+                };
+            });
+        }
+
         window.parent.postMessage(
             JSON.stringify({
                 action: "insert_to_planner",
-                configInfo: this.createConfigInfo(),
+                configInfo,
             }),
             "*"
         );
@@ -847,65 +803,5 @@ class Configurator_1 {
         );
 
         this.PH.disposeRenderers();
-    }
-
-    createConfigInfo() {
-        const configInfo = {
-            configId: this.configId,
-            startModelId: this.startModelId,
-            materials: this.sceneObject.getMaterialsObjects(),
-            configType: this.configType,
-        };
-
-        if (this.configType === "modelReplace") {
-            configInfo.modelData = {
-                curId: this.modelData.curId,
-            };
-        }
-        if (this.configType === "meshReplace") {
-            configInfo.meshesData = {};
-
-            this.model3d.traverse((mesh) => {
-                if (mesh.type === "Mesh") {
-                    const hash = mesh.userData.md5;
-
-                    const { curId, modelsForReplace, copiesHashes, ownPos, parentHash } =
-                        this.meshesData[hash];
-
-                    configInfo.meshesData[hash] = {
-                        curId,
-                        meshPos: mesh.position,
-                        possibleIds:
-                            modelsForReplace?.map((data) => data.id).filter((id) => id != 0) || [],
-                    };
-
-                    if (copiesHashes) {
-                        configInfo.meshesData[hash].copiesHashes = copiesHashes;
-                    }
-
-                    if (!parentHash) {
-                        configInfo.meshesData[hash].geomPos = ownPos;
-                    }
-                }
-            });
-
-            configInfo.params = {
-                width: this.sceneObject.width,
-                height: this.sceneObject.height,
-                depth: this.sceneObject.depth,
-                elevation: this.sceneObject.elevation || 0,
-            };
-        }
-
-        return configInfo;
-    }
-
-    updateModel(params) {
-        this.sceneObject.setWidth(params.width);
-        this.sceneObject.setHeight(params.height);
-        this.sceneObject.setDepth(params.depth);
-        this.sceneObject.y = -params.height / 2;
-        this.sceneObject.elevation = params.elevation;
-        this.sceneObject.update();
     }
 }

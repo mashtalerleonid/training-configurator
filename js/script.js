@@ -4,6 +4,14 @@ const plannerContainer = document.querySelector("#configurator-container");
 
 let configurator = null;
 
+let value = 0;
+let curParams = {};
+let isLocked = false;
+
+const firstDelay = 3;
+let delay = 0;
+let intervalId = null;
+
 let selectedMeshIndex = -1;
 let selectedHash = "";
 let modelMatData = null;
@@ -50,10 +58,10 @@ function onPlannercoreLoaded() {
 }
 
 // для локальної розробки розкоментувати
-let configInfo = null;
-let isLocalHost = true;
+// let configInfo = null;
+// let isLocalHost = true;
 // let modelId = "";
-let modelId = "33123"; // bed
+// let modelId = "33123"; // bed
 // let modelId = "33172"; //тумба
 // let modelId = "33107"; // chair
 
