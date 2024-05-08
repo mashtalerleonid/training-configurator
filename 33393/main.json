@@ -9,23 +9,39 @@
             "title": "Handles",
             "modelsForReplace": [
                 {
-                    "id": "0",
-                    "title": "No handles",
-                    "text": ""
-                },
-                {
                     "id": "33447",
                     "title": "Handle 1",
-                    "text": "Height: 10 cm"
+                    "text": "Round"
                 },
                 {
                     "id": "33448",
                     "title": "Handle 2",
-                    "text": "Height: 10 cm"
+                    "text": "Square"
                 }
             ],
             "defaultId": "33447",
             "copyIndexes": [1]
+        },
+        {
+            "geometryIndex": 11,
+            "title": "Hinges",
+            "modelsForReplace": [
+                {
+                    "id": "33454",
+                    "title": "Hinge 1",
+                    "text": "Round hinge"
+                },
+                {
+                    "id": "33455",
+                    "title": "Hinge 2",
+                    "text": "Square hinge"
+                }
+            ],
+            "defaultId": "33454",
+            "copyIndexes": [7, 8, 10]
         }
     ]
 }
+
+
+

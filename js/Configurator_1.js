@@ -151,24 +151,25 @@ class Configurator_1 {
         }
 
         this.PH.placeModel(idToPlace, settings, () => {
-            this.sceneObject.width = configInfo.params.width;
-            this.sceneObject.height = configInfo.params.height;
-            this.sceneObject.depth = configInfo.params.depth;
+            if (this.isPlanner) {
+                this.sceneObject.width = configInfo.params.width;
+                this.sceneObject.height = configInfo.params.height;
+                this.sceneObject.depth = configInfo.params.depth;
+            }
 
             curParams = {
                 width: this.sceneObject.width,
                 height: this.sceneObject.height,
                 depth: this.sceneObject.depth,
                 elevation: this.sceneObject.objectData.property.position.y,
-            }
+            };
 
             widthInp.value = curParams.width;
             heightInp.value = curParams.height;
             depthInp.value = curParams.depth;
             elevationInp.value = curParams.elevation;
 
-
-            if (Object.keys(configInfo).every((key) => key == "params")) {
+            if (!configInfo || Object.keys(configInfo).every((key) => key == "params")) {
                 this.configInfo = null;
             } else {
                 this.configInfo = configInfo;
@@ -296,7 +297,7 @@ class Configurator_1 {
             this.sceneObject.update();
 
             allPossibleProductIds = this.modelData.modelsForReplace.map((data) => data.id);
-        } 
+        }
 
         this.productsDataLoader.addEventListener(
             Event.COMPLETE,
@@ -370,7 +371,7 @@ class Configurator_1 {
 
         R2D.Pool3D.removeEventListener(Event.FINISH, this.init3DLoadedListener);
 
-        this.findOwnPos();
+        this.findOwnPosNoChildren();
 
         if (this.configInfo) {
             const hashesFromConfigInfo = Object.keys(this.configInfo.meshesData);
@@ -388,6 +389,8 @@ class Configurator_1 {
                 this.replaceMesh(this.meshesData[hash].curId, hash);
             }
         }
+
+        this.findOwnPosWithChildren();
 
         this.findParents();
 
@@ -540,12 +543,11 @@ class Configurator_1 {
             }
 
             if (
-                this.sceneObject.isParametric &&
                 !meshData.parentHash &&
                 meshData.childrenPos.length == 0 &&
                 meshData.curId != -1
             ) {
-                // меш не має parent i children, замінюється (для параметричних)
+                // меш не має parent i children, замінюється
                 const mesh = this.getMeshByHash(hash);
                 if (!mesh) return;
                 mesh.geometry.translate(meshData.ownPos.x, meshData.ownPos.y, meshData.ownPos.z);
@@ -773,7 +775,6 @@ class Configurator_1 {
         });
 
         Object.entries(this.meshesData).forEach(([hash, meshData]) => {
-
             if (!meshData.childrenPos) return;
 
             meshData.childrenPos.forEach((data) => {
@@ -783,20 +784,34 @@ class Configurator_1 {
         });
     }
 
-    findOwnPos() {
-        Object.entries(this.meshesData).forEach(([hash, meshData]) => {
-            const geometry = this.getMeshByHash(hash)?.geometry;
+    findOwnPos(hash, meshData) {
+        const geometry = this.getMeshByHash(hash)?.geometry;
 
-            if (geometry) {
-                if (!geometry.boundingBox) {
-                    geometry.computeBoundingBox();
-                }
-    
-                const bbox = geometry.boundingBox;
-                const x = (bbox.max.x + bbox.min.x) / 2;
-                const y = bbox.min.y;
-                const z = (bbox.max.z + bbox.min.z) / 2;
-                meshData.ownPos = { x, y, z };
+        if (geometry) {
+            if (!geometry.boundingBox) {
+                geometry.computeBoundingBox();
+            }
+
+            const bbox = geometry.boundingBox;
+            const x = (bbox.max.x + bbox.min.x) / 2;
+            const y = bbox.min.y;
+            const z = (bbox.max.z + bbox.min.z) / 2;
+            meshData.ownPos = { x, y, z };
+        }
+    }
+
+    findOwnPosNoChildren() {
+        Object.entries(this.meshesData).forEach(([hash, meshData]) => {
+            if (!meshData.childrenPos.length) {
+                this.findOwnPos(hash, meshData);
+            }
+        });
+    }
+
+    findOwnPosWithChildren() {
+        Object.entries(this.meshesData).forEach(([hash, meshData]) => {
+            if (meshData.childrenPos.length) {
+                this.findOwnPos(hash, meshData);
             }
         });
     }

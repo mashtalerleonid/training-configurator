@@ -4,7 +4,12 @@
         "modelsForReplace": []
     },
     "geometries": [
-       
+        {
+            "geometryIndex": 0,
+            "title": "",
+            "modelsForReplace": [],
+            "defaultId": "33413"
+        },
         {
             "geometryIndex": 1,
             "title": "Carcasses",
