@@ -58,10 +58,10 @@ function onPlannercoreLoaded() {
 }
 
 // для локальної розробки розкоментувати
-console.log("TESTT");
 let configInfo = null;
 let isLocalHost = true;
-let modelId = "33393"; // window
+let modelId = null;
+// let modelId = "33393"; // window
 // let modelId = "33123"; // bed
 // let modelId = "33172"; //тумба
 // let modelId = "33107"; // chair

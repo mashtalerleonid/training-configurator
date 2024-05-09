@@ -890,9 +890,17 @@ class Configurator_1 {
                     configInfo.meshesData[hash] = {
                         curId,
                         meshPos: mesh.position,
-                        possibleIds:
-                            modelsForReplace?.map((data) => data.id).filter((id) => id != 0) || [],
                     };
+
+                    if (!modelsForReplace) {
+                        configInfo.meshesData[hash].possibleIds = [];
+                    } else if (modelsForReplace.length == 0) {
+                        configInfo.meshesData[hash].possibleIds = [curId];
+                    } else {
+                        configInfo.meshesData[hash].possibleIds = modelsForReplace
+                            .map((data) => data.id)
+                            .filter((id) => id != 0);
+                    }
 
                     if (copiesHashes) {
                         configInfo.meshesData[hash].copiesHashes = copiesHashes;
@@ -922,5 +930,17 @@ class Configurator_1 {
         this.sceneObject.y = -params.height / 2;
         this.sceneObject.elevation = params.elevation;
         this.sceneObject.update();
+    }
+
+    getURLforAR() {
+        const configInfo = this.createConfigInfo();
+        const hashesArr = this.initMaterials.map((mo) => mo.hash);
+        const shortConfigInfo = R2D.AR.convertToShortMeshReplace(configInfo, hashesArr);
+        console.log(shortConfigInfo);
+        const confInfo64 = btoa(JSON.stringify(shortConfigInfo));
+        console.log(confInfo64);
+        const url = "https://ar.realist.digital/?config=" + confInfo64;
+
+        return url;
     }
 }
