@@ -64,6 +64,8 @@ window.addEventListener("message", (e) => {
 
     if (messageObj.action == "parent") {
         configurator.isPlanner = true;
+    } else if (messageObj.action == "get_AR_src") {
+        configurator.getURLforAR(messageObj.qrSize);
     }
 });
 

@@ -37,7 +37,7 @@ function onTHREELoaded() {
 }
 
 function onPlannercoreLoaded() {
-    if (isLocalHost) return; //для локальної розробки
+    // if (isLocalHost) return; //для локальної розробки
 
     configurator = new Configurator_1(plannerContainer, R2D);
 
@@ -58,26 +58,21 @@ function onPlannercoreLoaded() {
 }
 
 // для локальної розробки розкоментувати
-let configInfo = null;
-let isLocalHost = true;
-let modelId = null;
-// let modelId = "33393"; // window
-// let modelId = "33123"; // bed
-// let modelId = "33172"; //тумба
-// let modelId = "33107"; // chair
+// let configInfo = null;
+// let isLocalHost = true;
+// let modelId = null;
+// if (isLocalHost) {
+//     window.addEventListener("message", (e) => {
+//         if (!e.data || typeof e.data !== "string" || e.data.startsWith("/*framebus*/")) return;
+//         const data = JSON.parse(e.data);
+//         console.log("data", data);
+//         if (data.action === "start_configurate_localhost") {
+//             isLocalHost = false;
 
-if (isLocalHost) {
-    window.addEventListener("message", (e) => {
-        if (!e.data || typeof e.data !== "string" || e.data.startsWith("/*framebus*/")) return;
-        const data = JSON.parse(e.data);
-        console.log("data", data);
-        if (data.action === "start_configurate_localhost") {
-            isLocalHost = false;
-
-            modelId = data.modelId;
-            configInfo = data.configInfo;
-            onPlannercoreLoaded();
-        }
-    });
-}
+//             modelId = data.modelId;
+//             configInfo = data.configInfo;
+//             onPlannercoreLoaded();
+//         }
+//     });
+// }
 // -----------

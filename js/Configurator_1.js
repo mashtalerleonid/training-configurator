@@ -542,11 +542,7 @@ class Configurator_1 {
                 this.setGeometryToOrigin(this.getMeshByHash(hash).geometry);
             }
 
-            if (
-                !meshData.parentHash &&
-                meshData.childrenPos.length == 0 &&
-                meshData.curId != -1
-            ) {
+            if (!meshData.parentHash && meshData.childrenPos.length == 0 && meshData.curId != -1) {
                 // меш не має parent i children, замінюється
                 const mesh = this.getMeshByHash(hash);
                 if (!mesh) return;
@@ -932,14 +928,27 @@ class Configurator_1 {
         this.sceneObject.update();
     }
 
-    getURLforAR() {
+    getURLforAR(size) {
         const configInfo = this.createConfigInfo();
-        const hashesArr = this.initMaterials.map((mo) => mo.hash);
-        const shortConfigInfo = R2D.AR.convertToShortMeshReplace(configInfo, hashesArr);
-        console.log(shortConfigInfo);
+
+        const hashessArr = configInfo.configType === "meshReplace"
+            ? this.initMaterials.map((mo) => mo.hash)
+            : this.sceneObject.getMaterialsObjects().map((mo) => mo.hash);
+
+        const shortConfigInfo = R2D.AR.convertToShort(configInfo, hashessArr);
         const confInfo64 = btoa(JSON.stringify(shortConfigInfo));
-        console.log(confInfo64);
-        const url = "https://ar.realist.digital/?config=" + confInfo64;
+
+        const baseUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${size.w}x${size.h}&data=`;
+        // const url = `${baseUrl}https://ar.realist.digital/?config=${confInfo64}`;
+        const url = `${baseUrl}https://configurator.realist.digital/?config=${confInfo64}`;
+
+        window.parent.postMessage(
+            JSON.stringify({
+                action: "url_for_AR",
+                url,
+            }),
+            "*"
+        );
 
         return url;
     }
