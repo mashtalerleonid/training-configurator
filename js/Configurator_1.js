@@ -694,6 +694,17 @@ class Configurator_1 {
         const material = materials.find((mo) => mo.hash === hash);
         if (material) material.current = color;
 
+        // ----- check copy indexes -----
+        const configData = this.getConfigDataByHash(hash);
+        if (configData?.copyIndexes) {
+            configData.copyIndexes.forEach((copyIndex) => {
+                const hashCopy = this.initMaterials[copyIndex].hash;
+                const copyMaterial = materials.find((mo) => mo.hash === hashCopy);
+                if (copyMaterial) copyMaterial.current = color;
+            });
+        }
+        // -----
+
         this.sceneObject.update();
     }
 
@@ -912,7 +923,7 @@ class Configurator_1 {
                 width: this.sceneObject.width,
                 height: this.sceneObject.height,
                 depth: this.sceneObject.depth,
-                elevation: this.sceneObject.elevation || 0,
+                elevation: this.sceneObject.elevation || this.sceneObject.objectData.property.position.y,
             };
         }
 

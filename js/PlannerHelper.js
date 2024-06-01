@@ -3,9 +3,11 @@ class PlannerHelper {
         this.configurator = configurator;
 
         this.planner = new R2D.PlannerCore();
-        this.planner.setSize(plannerContainer.offsetWidth, plannerContainer.offsetHeight);
+        R2D.view3d.setSize(plannerContainer.offsetWidth, plannerContainer.offsetHeight);
         this.plannerDom = this.planner.getDomElement();
         plannerContainer.appendChild(this.plannerDom);
+
+        R2D.usedByConfigurator = true;
 
         this.productsDataLoader = new R2D.ProductsDataLoader();
         this.materialsOnModelMap = new Map();
