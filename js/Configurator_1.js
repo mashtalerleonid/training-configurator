@@ -106,7 +106,7 @@ class Configurator_1 {
                 }
 
                 const categoryId = Object.keys(productData.categoryMaterial)[0];
-                const treeArr = productData.categoryMaterial[categoryId];
+                const treeArr = [...productData.categoryMaterial[categoryId]].reverse();
                 let curNodes = treeMaterial;
                 for (let i = 0; i < treeArr.length - 1; i += 1) {
                     const curLevelId = treeArr[i].id;
@@ -950,8 +950,8 @@ class Configurator_1 {
         const confInfo64 = btoa(JSON.stringify(shortConfigInfo));
 
         const baseUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${size.w}x${size.h}&data=`;
-        // const url = `${baseUrl}https://ar.realist.digital/?config=${confInfo64}`;
-        const url = `${baseUrl}https://configurator.realist.digital/?config=${confInfo64}`;
+        const url = `${baseUrl}https://ar.realist.digital/?config=${confInfo64}`;
+        // const url = `${baseUrl}https://configurator.realist.digital/?config=${confInfo64}`;
 
         window.parent.postMessage(
             JSON.stringify({
